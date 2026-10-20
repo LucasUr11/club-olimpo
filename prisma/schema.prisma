@@ -1,0 +1,135 @@
+// ============================================================================
+// Club Atlético Olimpo Asociación Mutual — Esquema de datos
+// ----------------------------------------------------------------------------
+// Provider: SQLite (compatible con Turso/libSQL en la nube).
+// La URL de conexión NO vive en el esquema: se inyecta en runtime desde
+// .env (DATABASE_URL + TURSO_AUTH_TOKEN) a través de @prisma/adapter-libsql.
+//
+// Nota: SQLite no soporta enums de Prisma, por lo que las colecciones
+// cerradas (disciplina, categoría, estado…) se modelan como String y se
+// validan con uniones de tipos en shared/types.ts.
+// ============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// Partidos del club (primer equipo, inferiores y otras disciplinas).
+model Match {
+  id          String   @id @default(cuid())
+  /// Clave de disciplina: futbol | futbol-femenino | basquet | voley | hockey
+  discipline  String
+  /// Nombre del equipo: "Primera División", "Reserva", "Sub-17"...
+  team        String
+  opponent    String
+  isHome      Boolean  @default(true)
+  /// Fecha y hora (ISO-8601) del encuentro.
+  kickoff     DateTime
+  competition String
+  venue       String?
+  /// scheduled | finished | postponed
+  status      String   @default("scheduled")
+  homeScore   Int?
+  awayScore   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([discipline, kickoff])
+  @@index([status, kickoff])
+}
+
+/// Noticias y novedades del club.
+model News {
+  id    String @id @default(cuid())
+  title String
+  slug  String @unique
+  /// Bajada corta (aparece en el carrusel).
+  excerpt String
+  /// Cuerpo completo de la nota (para el detalle futuro).
+  body      String?
+  /// primera | inferiores | obras | institucional
+  category  String
+  coverUrl  String?
+  published Boolean  @default(true)
+  publishedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, publishedAt])
+  @@index([category])
+}
+
+/// Palmarés: títulos y logros por disciplina.
+model Achievement {
+  id String @id @default(cuid())
+  /// futbol | futbol-femenino | basquet | voley | hockey
+  discipline String
+  /// Ej.: "Liga Regional Dr. Adrián Beccar Varela"
+  title String
+  count Int @default(1)
+  /// Años de obtención, separados por comas (ej.: "1938, 1960, 1965").
+  years String?
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([discipline, order])
+}
+
+/// Sponsors / patrocinadores oficiales.
+model Sponsor {
+  id String @id @default(cuid())
+  name String
+  /// principal | oficial | colaborador
+  tier String  @default("oficial")
+  url      String?
+  logoUrl  String?
+  order    Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tier, order])
+}
+
+/// Hitos históricos de la institución (línea de tiempo).
+model HistoryMilestone {
+  id String @id @default(cuid())
+  year Int
+  title String
+  description String
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([year])
+}
+
+/// Productos de la tienda oficial (Shop).
+model Product {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+  description String
+  /// Precio en pesos argentinos (entero, sin decimales).
+  price     Int
+  currency  String  @default("ARS")
+  category  String
+  imageUrl  String?
+  featured  Boolean @default(false)
+  available Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([featured, available])
+}
