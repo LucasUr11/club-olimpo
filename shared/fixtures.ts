@@ -187,6 +187,7 @@ export const news: NewsItem[] = [
       'Con dos goles en el segundo tiempo y el Coco Bordi lleno, Olimpo se quedó con el clásico de Laborde y suma tres puntos claves en el Apertura 2026.',
     category: 'primera',
     publishedAt: '2026-10-18T22:00:00-03:00',
+    coverUrl: null,
   },
   {
     id: 'fx-news-2',
@@ -196,6 +197,7 @@ export const news: NewsItem[] = [
       'Sub-17, Sub-15 y Sub-13 sumaron triunfos en el fin de semana. La cantera sigue creciendo con más de 80 chicos en las categorías formativas.',
     category: 'inferiores',
     publishedAt: '2026-10-15T20:00:00-03:00',
+    coverUrl: null,
   },
   {
     id: 'fx-news-3',
@@ -205,6 +207,7 @@ export const news: NewsItem[] = [
       'La obra, financiada con aportes de socios y sponsors, permitirá jugar partidos nocturnos con estándares de la AFA y reducirá el consumo energético.',
     category: 'obras',
     publishedAt: '2026-10-10T18:00:00-03:00',
+    coverUrl: null,
   },
   {
     id: 'fx-news-4',
@@ -214,6 +217,7 @@ export const news: NewsItem[] = [
       'La sede de San Martín 148 recibe de lunes a sábado. Socios activos, familiares y emprendedores del club pueden renovar su cuota anual.',
     category: 'institucional',
     publishedAt: '2026-10-05T12:00:00-03:00',
+    coverUrl: null,
   },
   {
     id: 'fx-news-5',
@@ -223,6 +227,7 @@ export const news: NewsItem[] = [
       'El equipo femenino del Olimpo se impuso en su debut y ya prepara el segundo encuentro de local en el Coco Bordi.',
     category: 'institucional',
     publishedAt: '2026-09-28T19:00:00-03:00',
+    coverUrl: null,
   },
 ]
 
@@ -294,14 +299,14 @@ export const achievements: Achievement[] = [
 // ----------------------------------------------------------------------------
 
 export const sponsors: Sponsor[] = [
-  { id: 'fx-spon-1', name: 'Supermercado Del Sur', tier: 'principal', url: null },
-  { id: 'fx-spon-2', name: 'Metalúrgica Bracamonte', tier: 'principal', url: null },
-  { id: 'fx-spon-3', name: 'Farmacia Central', tier: 'oficial', url: null },
-  { id: 'fx-spon-4', name: 'Transporte San Martín', tier: 'oficial', url: null },
-  { id: 'fx-spon-5', name: 'Granos del Oeste', tier: 'oficial', url: null },
-  { id: 'fx-spon-6', name: 'Agropecuaria Galli', tier: 'colaborador', url: null },
-  { id: 'fx-spon-7', name: 'Bazar Cavia', tier: 'colaborador', url: null },
-  { id: 'fx-spon-8', name: 'Peluquería Suárez', tier: 'colaborador', url: null },
+  { id: 'fx-spon-1', name: 'Supermercado Del Sur', tier: 'principal', url: null, logoUrl: null },
+  { id: 'fx-spon-2', name: 'Metalúrgica Bracamonte', tier: 'principal', url: null, logoUrl: null },
+  { id: 'fx-spon-3', name: 'Farmacia Central', tier: 'oficial', url: null, logoUrl: null },
+  { id: 'fx-spon-4', name: 'Transporte San Martín', tier: 'oficial', url: null, logoUrl: null },
+  { id: 'fx-spon-5', name: 'Granos del Oeste', tier: 'oficial', url: null, logoUrl: null },
+  { id: 'fx-spon-6', name: 'Agropecuaria Galli', tier: 'colaborador', url: null, logoUrl: null },
+  { id: 'fx-spon-7', name: 'Bazar Cavia', tier: 'colaborador', url: null, logoUrl: null },
+  { id: 'fx-spon-8', name: 'Peluquería Suárez', tier: 'colaborador', url: null, logoUrl: null },
 ]
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -401,6 +406,7 @@ export const products: Product[] = [
     price: 42999,
     currency: 'ARS',
     category: 'camisetas',
+    imageUrl: '/fotos-olimpo/Camiseta-Primera-2026-1.png',
     featured: true,
   },
   {
@@ -411,6 +417,7 @@ export const products: Product[] = [
     price: 42999,
     currency: 'ARS',
     category: 'camisetas',
+    imageUrl: null,
     featured: true,
   },
   {
@@ -421,6 +428,7 @@ export const products: Product[] = [
     price: 13999,
     currency: 'ARS',
     category: 'accesorios',
+    imageUrl: null,
     featured: true,
   },
   {
@@ -431,6 +439,7 @@ export const products: Product[] = [
     price: 24999,
     currency: 'ARS',
     category: 'entrenamiento',
+    imageUrl: null,
     featured: false,
   },
   {
@@ -441,6 +450,7 @@ export const products: Product[] = [
     price: 17999,
     currency: 'ARS',
     category: 'entrenamiento',
+    imageUrl: '/fotos-olimpo/Short-2026.png',
     featured: false,
   },
 ]

@@ -79,6 +79,14 @@ export interface NewsItem {
   excerpt: string
   category: NewsCategory
   publishedAt: string
+  /** URL de la imagen de portada (almacenamiento en la nube o ruta local). */
+  coverUrl: string | null
+}
+
+/** Noticia con los campos editoriales que solo ve el panel de administración. */
+export interface NewsAdminItem extends NewsItem {
+  body: string | null
+  published: boolean
 }
 
 /** Logro del palmarés. */
@@ -96,6 +104,8 @@ export interface Sponsor {
   name: string
   tier: SponsorTier
   url: string | null
+  /** URL del logotipo (almacenamiento en la nube o ruta local). */
+  logoUrl: string | null
 }
 
 /** Hito de la línea de tiempo histórica. */
@@ -115,11 +125,83 @@ export interface Product {
   price: number
   currency: string
   category: string
+  /** URL de la imagen (almacenamiento en la nube o ruta local). */
+  imageUrl: string | null
   featured: boolean
+}
+
+/** Producto con el campo de disponibilidad que solo ve el panel de administración. */
+export interface ProductAdminItem extends Product {
+  available: boolean
 }
 
 /** Origen de los datos devueltos por la API. */
 export type ApiSource = 'db' | 'fixtures'
+
+// ───────────────────────────────────────────────────────────────────────────
+// Payloads de escritura del panel de administración
+// ----------------------------------------------------------------------------
+// Las URLs de imagen son strings: el proveedor de almacenamiento en la nube
+// sube el archivo y entrega la URL final; la API solo valida y persiste el
+// string (no recibe archivos binarios).
+// ───────────────────────────────────────────────────────────────────────────
+
+export interface MatchInput {
+  discipline: Discipline
+  team: string
+  opponent: string
+  isHome: boolean
+  /** ISO-8601. */
+  kickoff: string
+  competition: string
+  venue: string | null
+  status: MatchStatus
+  homeScore: number | null
+  awayScore: number | null
+}
+export type MatchPatch = Partial<MatchInput>
+
+export interface NewsInput {
+  title: string
+  slug: string
+  excerpt: string
+  body: string | null
+  category: NewsCategory
+  coverUrl: string | null
+  published: boolean
+  /** ISO-8601; si es null la base usa la fecha de creación. */
+  publishedAt: string | null
+}
+export type NewsPatch = Partial<NewsInput>
+
+export interface SponsorInput {
+  name: string
+  tier: SponsorTier
+  url: string | null
+  logoUrl: string | null
+  order: number
+}
+export type SponsorPatch = Partial<SponsorInput>
+
+export interface ProductInput {
+  name: string
+  slug: string
+  description: string
+  price: number
+  currency: string
+  category: string
+  imageUrl: string | null
+  featured: boolean
+  available: boolean
+}
+export type ProductPatch = Partial<ProductInput>
+
+/** Respuesta del login del panel. */
+export interface AdminSession {
+  token: string
+  tokenType: 'Bearer'
+  expiresAt: string
+}
 
 // ───────────────────────────────────────────────────────────────────────────
 // Validadores: convierten Strings de BD en uniones de tipos (o valores por defecto)

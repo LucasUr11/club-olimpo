@@ -17,11 +17,22 @@ import {
   type ApiSource,
   type HistoryMilestone,
   type Match,
+  type MatchInput,
+  type MatchPatch,
+  type NewsAdminItem,
+  type NewsInput,
   type NewsItem,
+  type NewsPatch,
   type Product,
+  type ProductAdminItem,
+  type ProductInput,
+  type ProductPatch,
   type Sponsor,
+  type SponsorInput,
+  type SponsorPatch,
 } from '../shared/types'
 import { getPrisma, type Env } from './db'
+import { ApiError } from './errors'
 
 /** Respuesta estandarizada de la API. */
 export interface RepositoryResult<T> {
@@ -73,7 +84,10 @@ interface NewsRow {
   title: string
   slug: string
   excerpt: string
+  body: string | null
   category: string
+  coverUrl: string | null
+  published: boolean
   publishedAt: Date
 }
 
@@ -90,6 +104,7 @@ interface SponsorRow {
   name: string
   tier: string
   url: string | null
+  logoUrl: string | null
 }
 
 interface HistoryRow {
@@ -107,7 +122,9 @@ interface ProductRow {
   price: number
   currency: string
   category: string
+  imageUrl: string | null
   featured: boolean
+  available: boolean
 }
 
 // ── Mappers BD → DTO ───────────────────────────────────────────────────────
@@ -133,6 +150,13 @@ const mapNews = (row: NewsRow): NewsItem => ({
   excerpt: row.excerpt,
   category: asNewsCategory(row.category),
   publishedAt: row.publishedAt.toISOString(),
+  coverUrl: row.coverUrl,
+})
+
+const mapNewsAdmin = (row: NewsRow): NewsAdminItem => ({
+  ...mapNews(row),
+  body: row.body,
+  published: row.published,
 })
 
 const mapAchievement = (row: AchievementRow): Achievement => ({
@@ -148,6 +172,7 @@ const mapSponsor = (row: SponsorRow): Sponsor => ({
   name: row.name,
   tier: asSponsorTier(row.tier),
   url: row.url,
+  logoUrl: row.logoUrl,
 })
 
 const mapHistory = (row: HistoryRow): HistoryMilestone => ({
@@ -165,7 +190,13 @@ const mapProduct = (row: ProductRow): Product => ({
   price: row.price,
   currency: row.currency,
   category: row.category,
+  imageUrl: row.imageUrl,
   featured: row.featured,
+})
+
+const mapProductAdmin = (row: ProductRow): ProductAdminItem => ({
+  ...mapProduct(row),
+  available: row.available,
 })
 
 // ── Endpoints de lectura ───────────────────────────────────────────────────
@@ -302,5 +333,374 @@ export async function getHealth(env: Env): Promise<RepositoryResult<HealthData>>
     return { data, source: 'db' }
   } catch {
     return { data, source: 'fixtures' }
+  }
+}
+
+// ── Escrituras del panel de administración ────────────────────────────────
+// A diferencia de las lecturas, las escrituras NO caen a fixtures: si Turso
+// no está disponible responden 503/504 para no simular un guardado exitoso.
+
+async function requirePrisma(env: Env) {
+  const prisma = await getPrisma(env)
+  if (!prisma) {
+    throw new ApiError(
+      503,
+      'db_unavailable',
+      'La base de datos no está configurada. Definí DATABASE_URL y TURSO_AUTH_TOKEN para administrar el contenido.',
+    )
+  }
+  return prisma
+}
+
+/** Extrae el mensaje original del driver libSQL (los códigos de Prisma cambian con adapters). */
+function driverMessage(error: unknown): string {
+  if (typeof error !== 'object' || error === null) return ''
+  const meta = (error as { meta?: unknown }).meta
+  if (typeof meta !== 'object' || meta === null) return ''
+  const adapterError = (meta as { driverAdapterError?: unknown }).driverAdapterError
+  if (typeof adapterError !== 'object' || adapterError === null) return ''
+  const cause = (adapterError as { cause?: unknown }).cause
+  if (typeof cause !== 'object' || cause === null) return ''
+  const original = (cause as { originalMessage?: unknown }).originalMessage
+  if (typeof original === 'string') return original
+  const message = (cause as { message?: unknown }).message
+  return typeof message === 'string' ? message : ''
+}
+
+/** Traduce errores de Prisma / red a errores de API estables. */
+function dbFailure(error: unknown): never {
+  if (error instanceof ApiError) throw error
+
+  if (error instanceof Error && error.message.includes('Timeout')) {
+    throw new ApiError(504, 'db_timeout', 'La base de datos tardó demasiado en responder. Intentá de nuevo.')
+  }
+
+  const code =
+    typeof error === 'object' && error !== null && 'code' in error
+      ? String((error as { code: unknown }).code)
+      : ''
+  const driver = driverMessage(error).toLowerCase()
+
+  const isUniqueViolation =
+    code === 'P2002' || (code === 'P2039' && driver.includes('unique constraint'))
+  const isForeignKeyViolation =
+    code === 'P2003' || (code === 'P2039' && driver.includes('foreign key'))
+
+  if (isUniqueViolation) {
+    throw new ApiError(409, 'conflict', 'Ya existe un registro con ese slug (u otro valor único).')
+  }
+  if (code === 'P2025') {
+    throw new ApiError(404, 'not_found', 'El registro solicitado no existe.')
+  }
+  if (isForeignKeyViolation) {
+    throw new ApiError(409, 'conflict', 'La operación viola una relación existente.')
+  }
+
+  throw new ApiError(503, 'db_unavailable', 'No se pudo completar la operación en la base de datos.')
+}
+
+// ── Listados completos (incluyen borradores y no disponibles) ──────────────
+
+export async function listAdminMatches(env: Env): Promise<RepositoryResult<Match[]>> {
+  const prisma = await requirePrisma(env)
+  try {
+    const rows = await withTimeout(prisma.match.findMany({ orderBy: { kickoff: 'asc' } }))
+    return { data: rows.map(mapMatch), source: 'db' }
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function listAdminNews(env: Env): Promise<RepositoryResult<NewsAdminItem[]>> {
+  const prisma = await requirePrisma(env)
+  try {
+    const rows = await withTimeout(prisma.news.findMany({ orderBy: { publishedAt: 'desc' } }))
+    return { data: rows.map(mapNewsAdmin), source: 'db' }
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function listAdminSponsors(env: Env): Promise<RepositoryResult<Sponsor[]>> {
+  const prisma = await requirePrisma(env)
+  try {
+    const rows = await withTimeout(
+      prisma.sponsor.findMany({ orderBy: [{ order: 'asc' }, { name: 'asc' }] }),
+    )
+    return { data: rows.map(mapSponsor), source: 'db' }
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function listAdminProducts(env: Env): Promise<RepositoryResult<ProductAdminItem[]>> {
+  const prisma = await requirePrisma(env)
+  try {
+    const rows = await withTimeout(
+      prisma.product.findMany({ orderBy: [{ featured: 'desc' }, { name: 'asc' }] }),
+    )
+    return { data: rows.map(mapProductAdmin), source: 'db' }
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+// ── Partidos ───────────────────────────────────────────────────────────────
+
+export async function createMatch(env: Env, input: MatchInput): Promise<Match> {
+  const prisma = await requirePrisma(env)
+  try {
+    const row = await withTimeout(
+      prisma.match.create({
+        data: {
+          discipline: input.discipline,
+          team: input.team,
+          opponent: input.opponent,
+          isHome: input.isHome,
+          kickoff: new Date(input.kickoff),
+          competition: input.competition,
+          venue: input.venue,
+          status: input.status,
+          homeScore: input.homeScore,
+          awayScore: input.awayScore,
+        },
+      }),
+    )
+    return mapMatch(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function updateMatch(env: Env, id: string, patch: MatchPatch): Promise<Match> {
+  const prisma = await requirePrisma(env)
+  try {
+    const data: {
+      discipline?: string
+      team?: string
+      opponent?: string
+      isHome?: boolean
+      kickoff?: Date
+      competition?: string
+      venue?: string | null
+      status?: string
+      homeScore?: number | null
+      awayScore?: number | null
+    } = {}
+
+    if (patch.discipline !== undefined) data.discipline = patch.discipline
+    if (patch.team !== undefined) data.team = patch.team
+    if (patch.opponent !== undefined) data.opponent = patch.opponent
+    if (patch.isHome !== undefined) data.isHome = patch.isHome
+    if (patch.kickoff !== undefined) data.kickoff = new Date(patch.kickoff)
+    if (patch.competition !== undefined) data.competition = patch.competition
+    if (patch.venue !== undefined) data.venue = patch.venue
+    if (patch.status !== undefined) data.status = patch.status
+    if (patch.homeScore !== undefined) data.homeScore = patch.homeScore
+    if (patch.awayScore !== undefined) data.awayScore = patch.awayScore
+
+    const row = await withTimeout(prisma.match.update({ where: { id }, data }))
+    return mapMatch(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function deleteMatch(env: Env, id: string): Promise<{ id: string }> {
+  const prisma = await requirePrisma(env)
+  try {
+    await withTimeout(prisma.match.delete({ where: { id } }))
+    return { id }
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+// ── Noticias ───────────────────────────────────────────────────────────────
+
+export async function createNews(env: Env, input: NewsInput): Promise<NewsAdminItem> {
+  const prisma = await requirePrisma(env)
+  try {
+    const row = await withTimeout(
+      prisma.news.create({
+        data: {
+          title: input.title,
+          slug: input.slug,
+          excerpt: input.excerpt,
+          body: input.body,
+          category: input.category,
+          coverUrl: input.coverUrl,
+          published: input.published,
+          ...(input.publishedAt ? { publishedAt: new Date(input.publishedAt) } : {}),
+        },
+      }),
+    )
+    return mapNewsAdmin(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function updateNews(env: Env, id: string, patch: NewsPatch): Promise<NewsAdminItem> {
+  const prisma = await requirePrisma(env)
+  try {
+    const data: {
+      title?: string
+      slug?: string
+      excerpt?: string
+      body?: string | null
+      category?: string
+      coverUrl?: string | null
+      published?: boolean
+      publishedAt?: Date
+    } = {}
+
+    if (patch.title !== undefined) data.title = patch.title
+    if (patch.slug !== undefined) data.slug = patch.slug
+    if (patch.excerpt !== undefined) data.excerpt = patch.excerpt
+    if (patch.body !== undefined) data.body = patch.body
+    if (patch.category !== undefined) data.category = patch.category
+    if (patch.coverUrl !== undefined) data.coverUrl = patch.coverUrl
+    if (patch.published !== undefined) data.published = patch.published
+    if (patch.publishedAt) data.publishedAt = new Date(patch.publishedAt)
+
+    const row = await withTimeout(prisma.news.update({ where: { id }, data }))
+    return mapNewsAdmin(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function deleteNews(env: Env, id: string): Promise<{ id: string }> {
+  const prisma = await requirePrisma(env)
+  try {
+    await withTimeout(prisma.news.delete({ where: { id } }))
+    return { id }
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+// ── Sponsors ───────────────────────────────────────────────────────────────
+
+export async function createSponsor(env: Env, input: SponsorInput): Promise<Sponsor> {
+  const prisma = await requirePrisma(env)
+  try {
+    const row = await withTimeout(
+      prisma.sponsor.create({
+        data: {
+          name: input.name,
+          tier: input.tier,
+          url: input.url,
+          logoUrl: input.logoUrl,
+          order: input.order,
+        },
+      }),
+    )
+    return mapSponsor(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function updateSponsor(env: Env, id: string, patch: SponsorPatch): Promise<Sponsor> {
+  const prisma = await requirePrisma(env)
+  try {
+    const data: {
+      name?: string
+      tier?: string
+      url?: string | null
+      logoUrl?: string | null
+      order?: number
+    } = {}
+
+    if (patch.name !== undefined) data.name = patch.name
+    if (patch.tier !== undefined) data.tier = patch.tier
+    if (patch.url !== undefined) data.url = patch.url
+    if (patch.logoUrl !== undefined) data.logoUrl = patch.logoUrl
+    if (patch.order !== undefined) data.order = patch.order
+
+    const row = await withTimeout(prisma.sponsor.update({ where: { id }, data }))
+    return mapSponsor(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function deleteSponsor(env: Env, id: string): Promise<{ id: string }> {
+  const prisma = await requirePrisma(env)
+  try {
+    await withTimeout(prisma.sponsor.delete({ where: { id } }))
+    return { id }
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+// ── Productos ──────────────────────────────────────────────────────────────
+
+export async function createProduct(env: Env, input: ProductInput): Promise<ProductAdminItem> {
+  const prisma = await requirePrisma(env)
+  try {
+    const row = await withTimeout(
+      prisma.product.create({
+        data: {
+          name: input.name,
+          slug: input.slug,
+          description: input.description,
+          price: input.price,
+          currency: input.currency,
+          category: input.category,
+          imageUrl: input.imageUrl,
+          featured: input.featured,
+          available: input.available,
+        },
+      }),
+    )
+    return mapProductAdmin(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function updateProduct(env: Env, id: string, patch: ProductPatch): Promise<ProductAdminItem> {
+  const prisma = await requirePrisma(env)
+  try {
+    const data: {
+      name?: string
+      slug?: string
+      description?: string
+      price?: number
+      currency?: string
+      category?: string
+      imageUrl?: string | null
+      featured?: boolean
+      available?: boolean
+    } = {}
+
+    if (patch.name !== undefined) data.name = patch.name
+    if (patch.slug !== undefined) data.slug = patch.slug
+    if (patch.description !== undefined) data.description = patch.description
+    if (patch.price !== undefined) data.price = patch.price
+    if (patch.currency !== undefined) data.currency = patch.currency
+    if (patch.category !== undefined) data.category = patch.category
+    if (patch.imageUrl !== undefined) data.imageUrl = patch.imageUrl
+    if (patch.featured !== undefined) data.featured = patch.featured
+    if (patch.available !== undefined) data.available = patch.available
+
+    const row = await withTimeout(prisma.product.update({ where: { id }, data }))
+    return mapProductAdmin(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function deleteProduct(env: Env, id: string): Promise<{ id: string }> {
+  const prisma = await requirePrisma(env)
+  try {
+    await withTimeout(prisma.product.delete({ where: { id } }))
+    return { id }
+  } catch (error) {
+    return dbFailure(error)
   }
 }
