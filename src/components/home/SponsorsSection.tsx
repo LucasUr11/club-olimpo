@@ -34,7 +34,7 @@ export default function SponsorsSection() {
       </div>
 
       {/* Marquesina */}
-      <div className="mt-10 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+      <div className="mt-10 overflow-hidden mask-[linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <div className="animate-marquee flex w-max gap-4 pr-4">
           {marqueeItems.map((sponsor, position) => (
             <div

@@ -102,6 +102,7 @@ export default function Footer() {
                 href={href}
                 aria-label={label}
                 className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/70 transition hover:border-amarillo hover:bg-amarillo hover:text-azul"
+                target="_blank"
               >
                 <Icon className="h-5 w-5" aria-hidden />
               </a>

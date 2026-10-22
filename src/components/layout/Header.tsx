@@ -64,7 +64,7 @@ export default function Header() {
 
           {/* Accesos directos */}
           <div className="hidden items-center gap-2 md:flex">
-            <ButtonLink href={siteLinks.shop} variant="accent" size="sm" icon={<ShoppingBag className="h-4 w-4" aria-hidden />}>
+            <ButtonLink href={siteLinks.shop} variant="accent" size="sm" icon={<ShoppingBag className="h-4 w-4" aria-hidden />} target="_blank">
               Shop
             </ButtonLink>
             <ButtonLink href={siteLinks.streaming} variant="outline-light" size="sm" icon={<Play className="h-4 w-4" aria-hidden />}>

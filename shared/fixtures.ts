@@ -25,16 +25,16 @@ import type {
 
 export const siteLinks = {
   /** URL de la tienda oficial (Shop). */
-  shop: '#',
+  shop: 'https://www.whatsapp.com/catalog/5493537685333/?app_absent=0&utm_source=ig',
   /** Canal oficial de streaming en vivo. */
   streaming: '#',
   /** Formulario / correo para ser sponsor. */
   sponsorship: '#',
   /** Correo de contacto institucional. */
-  email: 'mailto:contacto@caolimpo.com.ar',
-  instagram: '#',
-  facebook: '#',
-  youtube: '#',
+  email: 'lucasestudios2021@gmail.com',
+  instagram: 'https://www.instagram.com/olimpo.laborde/',
+  facebook: 'https://www.facebook.com/AoamLaborde',
+  youtube: 'https://www.youtube.com/@L%C3%A9quipe11',
 } as const
 
 // ───────────────────────────────────────────────────────────────────────────

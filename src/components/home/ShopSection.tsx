@@ -31,6 +31,7 @@ export default function ShopSection() {
                 variant="primary"
                 size="lg"
                 icon={<ShoppingBag className="h-5 w-5" aria-hidden />}
+                target="_blank"
               >
                 Ir a la tienda
               </ButtonLink>
@@ -57,7 +58,7 @@ export default function ShopSection() {
 function ProductCard({ product }: { product: Product }) {
   return (
     <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-amarillo hover:shadow-xl hover:shadow-azul/10">
-      <div className="pattern-stripes relative grid h-40 place-items-center bg-gradient-to-br from-azul via-azul-800 to-azul-950">
+      <div className="pattern-stripes relative grid h-40 place-items-center bg-linear-to-br from-azul via-azul-800 to-azul-950">
         <Shirt
           className="h-14 w-14 text-amarillo/80 transition duration-300 group-hover:scale-110"
           aria-hidden
