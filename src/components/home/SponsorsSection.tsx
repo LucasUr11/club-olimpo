@@ -45,11 +45,20 @@ export default function SponsorsSection() {
                 TIER_BORDER[sponsor.tier],
               )}
             >
-              <span className="font-display text-lg font-bold uppercase leading-tight tracking-wide text-azul">
-                {sponsor.name}
-              </span>
-              <span className="mt-1 text-[9px] uppercase tracking-[0.2em] text-slate-400">
-                {SPONSOR_TIER_LABELS[sponsor.tier]}
+              {sponsor.logoUrl ? (
+                <img
+                  src={sponsor.logoUrl}
+                  alt={`Logotipo de ${sponsor.name}`}
+                  loading="lazy"
+                  className="max-h-11 w-auto max-w-[8.5rem] object-contain"
+                />
+              ) : (
+                <span className="font-display text-lg font-bold uppercase leading-tight tracking-wide text-azul">
+                  {sponsor.name}
+                </span>
+              )}
+              <span className="mt-1.5 max-w-full truncate text-[9px] uppercase tracking-[0.2em] text-slate-400">
+                {sponsor.name} · {SPONSOR_TIER_LABELS[sponsor.tier]}
               </span>
             </div>
           ))}

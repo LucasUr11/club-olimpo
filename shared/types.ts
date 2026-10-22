@@ -108,6 +108,11 @@ export interface Sponsor {
   logoUrl: string | null
 }
 
+/** Patrocinador con el orden de aparición que solo ve el panel. */
+export interface SponsorAdminItem extends Sponsor {
+  order: number
+}
+
 /** Hito de la línea de tiempo histórica. */
 export interface HistoryMilestone {
   id: string

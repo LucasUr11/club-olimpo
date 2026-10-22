@@ -33,6 +33,10 @@ El portal arranca en `http://localhost:5173`. **No hace falta configurar la base
 | `ADMIN_PASSWORD` | Para el panel | Contraseña del login. Sin ella la API responde `503 admin_not_configured` |
 | `SESSION_SECRET` | Recomendada | Secreto HMAC para firmar sesiones. Si falta, se deriva de `ADMIN_PASSWORD` |
 | `ADMIN_SESSION_HOURS` | No | Duración de la sesión en horas (1–720). Por defecto `12` |
+| `VITE_CLOUDINARY_CLOUD_NAME` | Para subir imágenes | Cloud name de Cloudinary (público) |
+| `VITE_CLOUDINARY_UPLOAD_PRESET` | Para subir imágenes | Upload preset **unsigned** de Cloudinary (público) |
+
+Las variables `VITE_*` se compilan dentro del bundle del navegador: son públicas por diseño y **no deben contener secretos**. Si no están definidas, el panel igual permite pegar la URL de una imagen alojada en cualquier proveedor.
 
 Generá un secreto con:
 
@@ -71,11 +75,110 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
 Cuando la base esté configurada y tenga filas, la API sirve datos reales (`x-data-source: db`). Si la query falla (p. ej. token inválido), vuelve a fixtures en lugar de romper el sitio.
 
-# Panel de administración — Fase 1 (API)
+# Panel de administración
 
-Esta fase implementa el **backend autogestionable**: autenticación, CRUD completo y contrato de imágenes. La interfaz visual del panel (login, formularios, subida de imágenes) es la Fase 2 y consumirá estos mismos endpoints.
+El panel está implementado de punta a punta: backend (Fase 1) e interfaz visual (Fase 2). Permite gestionar partidos, noticias, patrocinadores y productos sin tocar código, y guarda todo en Turso.
 
-## Autenticación
+## Acceso al panel
+
+1. Levantá el proyecto con `npm run dev`.
+2. Abrí `http://localhost:5173/admin`.
+3. Ingresá la contraseña definida en `ADMIN_PASSWORD` (`.env`).
+
+La sesión se guarda en `sessionStorage` (se pierde al cerrar la pestaña) y se revalida contra `GET /api/auth/session` al entrar. Si el token vence, se revoca o la API responde `401`, el panel limpia la sesión y vuelve al login automáticamente. El botón **Salir** revoca el token en el servidor y descarta la sesión local.
+
+## Interfaz del panel (Fase 2)
+
+### Ruta y diseño
+
+- `/admin` se resuelve en el cliente (`src/App.tsx`); el panel se carga como **chunk separado** con `React.lazy`, así el sitio público no descarga su código.
+- Diseño **Mobile First** con Tailwind CSS 4 y la paleta institucional: azul `#212062`, amarillo `#FBD800` y blanco hueso.
+- Cabecera con escudo, acceso directo a **Ver sitio** y cierre de sesión; pestañas horizontales con scroll en mobile.
+
+### Secciones y operaciones
+
+| Pestaña | Listado | Formulario |
+| --- | --- | --- |
+| **Partidos** | Tarjetas con disciplina, rival, fecha/hora, cancha, estado y marcador | Disciplina, equipo, rival, localía, fecha/hora, competencia, estadio, estado y goles |
+| **Noticias** | Portada, categoría, estado (publicada/borrador) y fecha | Título, slug, bajada, cuerpo, categoría, fecha, imagen y publicación |
+| **Sponsors** | Logo, categoría, orden y sitio web | Nombre, categoría, URL, logo y orden |
+| **Productos** | Imagen, precio, categoría y estado (disponible/agotado) | Nombre, slug, descripción, precio, moneda, categoría, imagen, destacado y disponibilidad |
+
+Cada sección incluye:
+
+- Botón **Nuevo** y acciones **Editar** / **Eliminar** por elemento.
+- Confirmación antes de borrar (acción irreversible).
+- Estado vacío con llamada a la acción, skeleton de carga y botón de reintento si falla la API.
+- Conteo de elementos y descripción de qué se publica en el sitio.
+
+### Formularios y validación
+
+- Los formularios reutilizan `shared/validation.ts`, la **misma validación que aplica la API**: no hay reglas duplicadas ni mensajes distintos entre cliente y servidor.
+- Los errores se muestran por campo y, si el error no corresponde a un campo (por ejemplo un `409` por slug duplicado), aparece un aviso general.
+- Las fechas usan `<input type="datetime-local">` y se convierten a ISO-8601 antes de enviar, respetando la zona horaria del navegador.
+- Noticias y productos incluyen un botón para **generar el slug** desde el título o nombre (minúsculas, números y guiones).
+- Los partidos finalizados pueden guardar marcador; las noticias pueden quedar como **borrador** (`published: false`) y los productos como **agotados** (`available: false`), sin desaparecer del panel.
+
+### Imágenes: subida y URL
+
+El widget de imagen (`src/admin/components/ImageField.tsx`) permite:
+
+1. **Arrastrar y soltar** un archivo o elegirlo con el selector.
+2. Subirlo directo al proveedor configurado (Cloudinary con upload preset *unsigned*).
+3. Ver la vista previa y editar/pegar manualmente la URL final.
+4. Quitar la imagen (`null`).
+
+Reglas y comportamiento:
+
+- Validación en el cliente: solo imágenes y **máximo 5 MB**.
+- Se envía a la API **solo la URL resultante** (`secure_url`), nunca el archivo binario.
+- La API vuelve a validar la URL (`http(s)://` o ruta local `/...`) antes de guardarla en Turso.
+- Sin `VITE_CLOUDINARY_*` configurado, el panel sigue funcionando: se puede pegar la URL de una imagen alojada en cualquier proveedor (S3, R2, Supabase, etc.).
+
+Para habilitar la subida directa:
+
+1. Creá una cuenta en [Cloudinary](https://cloudinary.com/).
+2. En **Settings → Upload → Upload presets**, creá un preset **Unsigned** y restringilo (carpeta, formatos, tamaño máximo).
+3. Completá `.env`:
+
+   ```bash
+   VITE_CLOUDINARY_CLOUD_NAME="tu-cloud"
+   VITE_CLOUDINARY_UPLOAD_PRESET="olimpo-admin"
+   ```
+
+4. Reiniciá `npm run dev` (Vite solo lee `VITE_*` al arrancar).
+
+El cloud name y el preset unsigned son públicos por diseño. Las restricciones reales deben configurarse en Cloudinary.
+
+### Feedback y actualización del sitio
+
+- **Toasts** de éxito/error accesibles (`aria-live`) que se cierran solos a los 5 segundos.
+- Botones con estado *Guardando…* / *Eliminando…* para evitar dobles envíos.
+- Después de cada alta, edición o borrado, el listado se recarga y el portal público consulta la API al cargar; el enlace **Ver sitio** hace una navegación completa para traer los datos frescos.
+- Las lecturas públicas siguen teniendo fallback a fixtures: si Turso no responde, el sitio no queda vacío. Las escrituras, en cambio, nunca simulan éxito (`503`/`504`).
+
+### Archivos del panel
+
+```
+src/admin/AdminPage.tsx          puerta de autenticación y estado de sesión
+src/admin/AdminLogin.tsx         formulario de acceso
+src/admin/AdminShell.tsx         cabecera, pestañas y layout
+src/admin/feedback.tsx           toasts (contexto + aria-live)
+src/admin/formUtils.ts           fechas, slug y mapeo de errores de API
+src/admin/useAdminResource.ts    carga/recarga de colecciones con estado
+src/admin/sections/              Matches, News, Sponsors y Products
+src/admin/components/            modal, campos, imagen, confirmación, estados
+src/lib/adminApi.ts              cliente autenticado (token + errores tipados)
+src/lib/imageUpload.ts           subida directa a Cloudinary (unsigned)
+```
+
+### Despliegue de la ruta `/admin`
+
+El panel es una SPA: el hosting debe reescribir `/admin` (y cualquier ruta del cliente) hacia `index.html`. Vite `dev` y `preview` ya lo hacen. En un hosting estático (Netlify, Vercel, Cloudflare Pages) configurá el fallback SPA; en Nginx, `try_files $uri /index.html`.
+
+## API del panel (Fase 1)
+
+### Autenticación
 
 El login valida `ADMIN_PASSWORD` con comparación en tiempo constante y devuelve un **token de sesión firmado con HMAC-SHA256**. El servidor no guarda sesiones en la base:
 
@@ -116,7 +219,7 @@ Valida el token y devuelve `{ "data": { "valid": true, "expiresAt": "..." } }`. 
 
 Revoca el token recibido. Es idempotente: responde `200` aunque el token ya haya expirado.
 
-## Endpoints CRUD
+### Endpoints CRUD
 
 | Método | Ruta | Descripción |
 | --- | --- | --- |
@@ -226,7 +329,7 @@ curl -X DELETE http://localhost:5173/api/admin/news/<id> \
 
 ## Imágenes en la nube
 
-El almacenamiento de archivos queda fuera de la API: el proveedor (Cloudinary, S3, R2, Supabase Storage, etc.) recibe el archivo y devuelve una URL pública. El panel guarda **solo el string de la URL**; no hay endpoints de subida binaria en esta fase.
+El almacenamiento de archivos queda fuera de la API: el proveedor (Cloudinary, S3, R2, Supabase Storage, etc.) recibe el archivo y devuelve una URL pública. El panel sube el archivo desde el navegador y guarda **solo el string de la URL**; la API no recibe archivos binarios.
 
 | Recurso | Campo en la base | Campo en la API |
 | --- | --- | --- |
@@ -268,7 +371,8 @@ Reglas de validación (`shared/validation.ts` → `optionalUrl`):
 
 - `ADMIN_PASSWORD` y `SESSION_SECRET` viven solo en `.env` (nunca en el bundle del cliente).
 - La contraseña se compara con hash + `timingSafeEqual`.
-- El token se envía en `Authorization`, nunca en la URL. En la Fase 2, guardarlo en memoria/`sessionStorage` y limpiarlo al cerrar sesión; si se migra a cookies, usar `HttpOnly`, `Secure` y `SameSite=Strict`.
+- El token se envía en `Authorization`, nunca en la URL, y el panel lo guarda en `sessionStorage` (se borra al cerrar la pestaña o al recibir un `401`). Si se migra a cookies, usar `HttpOnly`, `Secure` y `SameSite=Strict`.
+- El upload preset de Cloudinary es *unsigned* y por eso público: restringilo en el dashboard (carpeta, formatos, tamaño) y revisá periódicamente su uso. Para un control más estricto, reemplazá la subida directa por un endpoint propio con firma.
 - El límite de intentos y la revocación de tokens son **en memoria**: alcanzan para una instancia. Con varias instancias hacen falta Redis o una tabla de sesiones en Turso.
 - En producción, serví todo por HTTPS y usá una contraseña larga y única (gestor de contraseñas).
 - Este backend corre dentro del proceso de Vite (`dev`/`preview`). Para un despliegue con otro hosting habrá que extraer los handlers de `server/api.ts` a un adaptador (Node, serverless, etc.); la lógica de auth, validación y repositorios ya está desacoplada.
@@ -299,8 +403,11 @@ server/repositories.ts   lecturas con fallback + listados y escrituras de admini
 server/api.ts            plugin Vite: rutas públicas, auth y CRUD /api/admin/*
 src/components/          Header, Footer, Hero, NextMatches, NewsCarousel, History,
                          Palmares, Sponsors, Shop, Streaming, íconos
+src/admin/               panel: login, shell, secciones CRUD y componentes
 src/hooks/useApi.ts      fetch con cache; arranca con fixtures y reemplaza al llegar la respuesta
-src/lib/api.ts           cliente HTTP tipado
+src/lib/api.ts           cliente HTTP tipado del sitio público
+src/lib/adminApi.ts      cliente autenticado del panel (token, errores, 401 global)
+src/lib/imageUpload.ts   subida directa de imágenes a Cloudinary (unsigned)
 ```
 
 Decisiones clave:
@@ -309,7 +416,7 @@ Decisiones clave:
 - **El sitio nunca se vacía:** las lecturas públicas son `{ data, source }`; el frontend pinta fixtures mientras llega la respuesta real.
 - **Escrituras honestas:** sin base disponible, el panel recibe un error explícito en vez de un falso éxito.
 - **Prisma 7:** la URL de la base vive en `prisma.config.ts` (no en el schema), y el cliente generado se importa desde `generated/prisma/client`.
-- **Validación compartida:** `shared/validation.ts` es la única fuente de verdad y podrá usarse en los formularios de la Fase 2.
+- **Validación compartida:** `shared/validation.ts` es la única fuente de verdad; los formularios del panel la reutilizan antes de enviar y la API la aplica como control final.
 
 ## Contenido editable
 

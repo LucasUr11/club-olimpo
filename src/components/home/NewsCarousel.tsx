@@ -102,34 +102,51 @@ export default function NewsCarousel() {
                   aria-hidden={itemIndex !== index}
                   className="min-w-full"
                 >
-                  <div className="relative min-h-[22rem] p-6 md:min-h-[20rem] md:p-12">
-                    <div className="pattern-stripes absolute inset-0 opacity-50" aria-hidden />
-                    <div
-                      className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-amarillo/10 blur-3xl"
-                      aria-hidden
-                    />
+                  <div className={cn('grid', item.coverUrl && 'md:grid-cols-[1.1fr_0.9fr]')}>
+                    <div className="relative min-h-[22rem] p-6 md:min-h-[20rem] md:p-12">
+                      <div className="pattern-stripes absolute inset-0 opacity-50" aria-hidden />
+                      <div
+                        className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-amarillo/10 blur-3xl"
+                        aria-hidden
+                      />
 
-                    <div className="relative flex h-full flex-col justify-center">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="rounded-full bg-amarillo px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-azul">
-                          {NEWS_CATEGORY_LABELS[item.category]}
-                        </span>
-                        <time
-                          dateTime={item.publishedAt}
-                          className="text-[11px] uppercase tracking-widest text-white/50"
-                        >
-                          {formatShortDate(item.publishedAt)}
-                        </time>
+                      <div className="relative flex h-full flex-col justify-center">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="rounded-full bg-amarillo px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-azul">
+                            {NEWS_CATEGORY_LABELS[item.category]}
+                          </span>
+                          <time
+                            dateTime={item.publishedAt}
+                            className="text-[11px] uppercase tracking-widest text-white/50"
+                          >
+                            {formatShortDate(item.publishedAt)}
+                          </time>
+                        </div>
+
+                        <h3 className="mt-5 max-w-3xl font-display text-3xl font-extrabold uppercase leading-[0.95] md:text-5xl">
+                          {item.title}
+                        </h3>
+
+                        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70 md:text-base">
+                          {item.excerpt}
+                        </p>
                       </div>
-
-                      <h3 className="mt-5 max-w-3xl font-display text-3xl font-extrabold uppercase leading-[0.95] md:text-5xl">
-                        {item.title}
-                      </h3>
-
-                      <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70 md:text-base">
-                        {item.excerpt}
-                      </p>
                     </div>
+
+                    {item.coverUrl ? (
+                      <div className="relative min-h-56 overflow-hidden bg-azul-900 md:min-h-full">
+                        <img
+                          src={item.coverUrl}
+                          alt=""
+                          loading={itemIndex === 0 ? 'eager' : 'lazy'}
+                          className="h-full w-full object-cover"
+                        />
+                        <div
+                          className="absolute inset-0 bg-linear-to-t from-azul-950/60 via-transparent to-transparent md:bg-linear-to-r md:from-azul-900/40 md:to-transparent"
+                          aria-hidden
+                        />
+                      </div>
+                    ) : null}
                   </div>
                 </article>
               ))}

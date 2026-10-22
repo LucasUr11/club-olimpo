@@ -58,17 +58,28 @@ export default function ShopSection() {
 function ProductCard({ product }: { product: Product }) {
   return (
     <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-amarillo hover:shadow-xl hover:shadow-azul/10">
-      <div className="pattern-stripes relative grid h-40 place-items-center bg-linear-to-br from-azul via-azul-800 to-azul-950">
-        <Shirt
-          className="h-14 w-14 text-amarillo/80 transition duration-300 group-hover:scale-110"
-          aria-hidden
-        />
-        {product.featured ? (
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-amarillo px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-azul">
-            <Star className="h-3 w-3" aria-hidden />
-            Destacado
-          </span>
-        ) : null}
+      <div className="pattern-stripes relative grid h-40 place-items-center overflow-hidden bg-linear-to-br from-azul via-azul-800 to-azul-950">
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            loading="lazy"
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <Shirt
+            className="h-14 w-14 text-amarillo/80 transition duration-300 group-hover:scale-110"
+            aria-hidden
+          />
+        )}
+        <div className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
+          {product.featured ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amarillo px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-azul">
+              <Star className="h-3 w-3" aria-hidden />
+              Destacado
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <div className="p-4">

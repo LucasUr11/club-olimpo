@@ -28,6 +28,7 @@ import {
   type ProductInput,
   type ProductPatch,
   type Sponsor,
+  type SponsorAdminItem,
   type SponsorInput,
   type SponsorPatch,
 } from '../shared/types'
@@ -105,6 +106,7 @@ interface SponsorRow {
   tier: string
   url: string | null
   logoUrl: string | null
+  order: number
 }
 
 interface HistoryRow {
@@ -173,6 +175,11 @@ const mapSponsor = (row: SponsorRow): Sponsor => ({
   tier: asSponsorTier(row.tier),
   url: row.url,
   logoUrl: row.logoUrl,
+})
+
+const mapSponsorAdmin = (row: SponsorRow): SponsorAdminItem => ({
+  ...mapSponsor(row),
+  order: row.order,
 })
 
 const mapHistory = (row: HistoryRow): HistoryMilestone => ({
@@ -421,13 +428,13 @@ export async function listAdminNews(env: Env): Promise<RepositoryResult<NewsAdmi
   }
 }
 
-export async function listAdminSponsors(env: Env): Promise<RepositoryResult<Sponsor[]>> {
+export async function listAdminSponsors(env: Env): Promise<RepositoryResult<SponsorAdminItem[]>> {
   const prisma = await requirePrisma(env)
   try {
     const rows = await withTimeout(
       prisma.sponsor.findMany({ orderBy: [{ order: 'asc' }, { name: 'asc' }] }),
     )
-    return { data: rows.map(mapSponsor), source: 'db' }
+    return { data: rows.map(mapSponsorAdmin), source: 'db' }
   } catch (error) {
     return dbFailure(error)
   }
