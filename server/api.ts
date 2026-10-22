@@ -13,7 +13,7 @@
 //   GET /api/products      → productos de la tienda
 //
 // Todas las respuestas de contenido tienen la forma: { data, source }
-// y el header `x-data-source: database | fixtures`.
+// y el header `x-data-source: db | fixtures`.
 // ============================================================================
 
 import type { ServerResponse } from 'node:http'

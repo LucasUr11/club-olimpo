@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
-    "db:schema:sql": "prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script",
+    "db:schema:sql": "prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script --output prisma/schema.sql",
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {

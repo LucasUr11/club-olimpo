@@ -184,7 +184,7 @@ export async function getMatches(env: Env): Promise<RepositoryResult<Match[]>> {
       }),
     )
     if (rows.length === 0) return fromFixtures(fixtures.matches)
-    return { data: rows.map(mapMatch), source: 'database' }
+    return { data: rows.map(mapMatch), source: 'db' }
   } catch {
     return fromFixtures(fixtures.matches)
   }
@@ -204,7 +204,7 @@ export async function getNews(env: Env): Promise<RepositoryResult<NewsItem[]>> {
       }),
     )
     if (rows.length === 0) return fromFixtures(fixtures.news)
-    return { data: rows.map(mapNews), source: 'database' }
+    return { data: rows.map(mapNews), source: 'db' }
   } catch {
     return fromFixtures(fixtures.news)
   }
@@ -220,7 +220,7 @@ export async function getAchievements(env: Env): Promise<RepositoryResult<Achiev
       prisma.achievement.findMany({ orderBy: [{ discipline: 'asc' }, { order: 'asc' }] }),
     )
     if (rows.length === 0) return fromFixtures(fixtures.achievements)
-    return { data: rows.map(mapAchievement), source: 'database' }
+    return { data: rows.map(mapAchievement), source: 'db' }
   } catch {
     return fromFixtures(fixtures.achievements)
   }
@@ -236,7 +236,7 @@ export async function getSponsors(env: Env): Promise<RepositoryResult<Sponsor[]>
       prisma.sponsor.findMany({ orderBy: [{ order: 'asc' }, { name: 'asc' }] }),
     )
     if (rows.length === 0) return fromFixtures(fixtures.sponsors)
-    return { data: rows.map(mapSponsor), source: 'database' }
+    return { data: rows.map(mapSponsor), source: 'db' }
   } catch {
     return fromFixtures(fixtures.sponsors)
   }
@@ -250,7 +250,7 @@ export async function getHistory(env: Env): Promise<RepositoryResult<HistoryMile
 
     const rows = await withTimeout(prisma.historyMilestone.findMany({ orderBy: { year: 'asc' } }))
     if (rows.length === 0) return fromFixtures(fixtures.history)
-    return { data: rows.map(mapHistory), source: 'database' }
+    return { data: rows.map(mapHistory), source: 'db' }
   } catch {
     return fromFixtures(fixtures.history)
   }
@@ -270,7 +270,7 @@ export async function getProducts(env: Env): Promise<RepositoryResult<Product[]>
       }),
     )
     if (rows.length === 0) return fromFixtures(fixtures.products)
-    return { data: rows.map(mapProduct), source: 'database' }
+    return { data: rows.map(mapProduct), source: 'db' }
   } catch {
     return fromFixtures(fixtures.products)
   }
@@ -299,7 +299,7 @@ export async function getHealth(env: Env): Promise<RepositoryResult<HealthData>>
     if (!prisma) return { data, source: 'fixtures' }
     await withTimeout(prisma.$queryRaw`SELECT 1`)
     data.database.reachable = true
-    return { data, source: 'database' }
+    return { data, source: 'db' }
   } catch {
     return { data, source: 'fixtures' }
   }

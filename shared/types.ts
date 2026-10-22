@@ -119,7 +119,7 @@ export interface Product {
 }
 
 /** Origen de los datos devueltos por la API. */
-export type ApiSource = 'database' | 'fixtures'
+export type ApiSource = 'db' | 'fixtures'
 
 // ───────────────────────────────────────────────────────────────────────────
 // Validadores: convierten Strings de BD en uniones de tipos (o valores por defecto)
