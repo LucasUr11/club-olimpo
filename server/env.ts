@@ -3,7 +3,7 @@
 // En Vite las variables llegan por `loadEnv()`; en Vercel viven en process.env.
 // ============================================================================
 
-import type { Env } from './db'
+import type { Env } from './db.js'
 
 /** Copia las variables definidas del proceso al formato que usa la API. */
 export function envFromProcess(): Env {
