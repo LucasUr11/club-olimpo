@@ -24,8 +24,13 @@ import type {
 // ───────────────────────────────────────────────────────────────────────────
 
 export const siteLinks = {
-  /** URL de la tienda oficial (Shop). */
+  /** URL de la tienda oficial (catálogo externo de WhatsApp). */
   shop: 'https://www.whatsapp.com/catalog/5493537685333/?app_absent=0&utm_source=ig',
+  /**
+   * Número de WhatsApp para cerrar los pedidos de la tienda.
+   * Formato internacional, solo dígitos (54 9 353 768 5333).
+   */
+  whatsapp: '5493537685333',
   /** Canal oficial de streaming en vivo. */
   streaming: '#',
   /** Formulario / correo para ser sponsor. */
@@ -394,7 +399,7 @@ export const history: HistoryMilestone[] = [
 ]
 
 // ───────────────────────────────────────────────────────────────────────────
-// Tienda (vista previa del Shop)
+// Tienda oficial (fallback y seed)
 // ----------------------------------------------------------------------------
 
 export const products: Product[] = [
@@ -403,7 +408,8 @@ export const products: Product[] = [
     name: 'Camiseta Titular 2026',
     slug: 'camiseta-titular-2026',
     description: 'Modelo oficial de juego con tecnología dry. Azul profundo con franjas amarillas.',
-    price: 42999,
+    memberPrice: 37999,
+    nonMemberPrice: 42999,
     currency: 'ARS',
     category: 'camisetas',
     imageUrl: '/fotos-olimpo/Camiseta-Primera-2026-1.png',
@@ -414,7 +420,8 @@ export const products: Product[] = [
     name: 'Camiseta Alternativa 2026',
     slug: 'camiseta-alternativa-2026',
     description: 'Segundo modelo oficial en amarillo con detalles azules. Edición limitada.',
-    price: 42999,
+    memberPrice: 37999,
+    nonMemberPrice: 42999,
     currency: 'ARS',
     category: 'camisetas',
     imageUrl: null,
@@ -425,7 +432,8 @@ export const products: Product[] = [
     name: 'Bufanda Azul y Amarilla',
     slug: 'bufanda-azul-y-amarilla',
     description: 'Bufanda tejida bicolor con bordado “AOAM”. Imprescindible para la hinchada.',
-    price: 13999,
+    memberPrice: 11999,
+    nonMemberPrice: 13999,
     currency: 'ARS',
     category: 'accesorios',
     imageUrl: null,
@@ -436,7 +444,8 @@ export const products: Product[] = [
     name: 'Musculosa de Entrenamiento',
     slug: 'musculosa-entrenamiento',
     description: 'Musculosa técnica del cuerpo técnico y plantel profesional.',
-    price: 24999,
+    memberPrice: 21999,
+    nonMemberPrice: 24999,
     currency: 'ARS',
     category: 'entrenamiento',
     imageUrl: null,
@@ -447,7 +456,8 @@ export const products: Product[] = [
     name: 'Short de Entrenamiento',
     slug: 'short-entrenamiento',
     description: 'Short liviano con logo bordado, ideal para entrenar como el primer equipo.',
-    price: 17999,
+    memberPrice: 15999,
+    nonMemberPrice: 17999,
     currency: 'ARS',
     category: 'entrenamiento',
     imageUrl: '/fotos-olimpo/Short-2026.png',

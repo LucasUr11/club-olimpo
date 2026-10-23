@@ -64,7 +64,7 @@ export default function Header() {
 
           {/* Accesos directos */}
           <div className="hidden items-center gap-2 md:flex">
-            <ButtonLink href={siteLinks.shop} variant="accent" size="sm" icon={<ShoppingBag className="h-4 w-4" aria-hidden />} target="_blank">
+            <ButtonLink href="#shop" variant="accent" size="sm" icon={<ShoppingBag className="h-4 w-4" aria-hidden />}>
               Shop
             </ButtonLink>
             <ButtonLink href={siteLinks.streaming} variant="outline-light" size="sm" icon={<Play className="h-4 w-4" aria-hidden />}>
@@ -75,7 +75,7 @@ export default function Header() {
           {/* Menú móvil */}
           <button
             type="button"
-            className="rounded-lg p-2 text-white transition hover:bg-white/10 md:hidden"
+            className="cursor-pointer rounded-lg p-2 text-white transition hover:bg-white/10 md:hidden"
             onClick={() => setMenuOpen((open) => !open)}
             aria-expanded={menuOpen}
             aria-controls="menu-movil"
@@ -103,7 +103,12 @@ export default function Header() {
               </a>
             ))}
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-4">
-              <ButtonLink href={siteLinks.shop} variant="accent" icon={<ShoppingBag className="h-4 w-4" aria-hidden />}>
+              <ButtonLink
+                href="#shop"
+                variant="accent"
+                icon={<ShoppingBag className="h-4 w-4" aria-hidden />}
+                onClick={() => setMenuOpen(false)}
+              >
                 Shop
               </ButtonLink>
               <ButtonLink href={siteLinks.streaming} variant="outline-light" icon={<Play className="h-4 w-4" aria-hidden />}>

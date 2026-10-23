@@ -120,8 +120,10 @@ model Product {
   name String
   slug String @unique
   description String
-  /// Precio en pesos argentinos (entero, sin decimales).
-  price     Int
+  /// Precio para socios del club, en la moneda del producto (entero, sin decimales).
+  memberPrice Int
+  /// Precio para no socios, en la moneda del producto (entero, sin decimales).
+  nonMemberPrice Int
   currency  String  @default("ARS")
   category  String
   imageUrl  String?

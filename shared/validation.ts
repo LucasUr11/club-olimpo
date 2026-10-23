@@ -394,15 +394,42 @@ export function parseSponsorPatch(input: unknown): ValidationResult<SponsorPatch
 
 // ── Productos ──────────────────────────────────────────────────────────────
 
+const PRODUCT_PRICE_MAX = 100_000_000
+
+/** El precio socio no debería superar el precio general. */
+function validateProductPrices(
+  ctx: Context,
+  memberPrice: number | undefined,
+  nonMemberPrice: number | undefined,
+): void {
+  if (memberPrice === undefined || nonMemberPrice === undefined) return
+  if (ctx.errors['memberPrice'] || ctx.errors['nonMemberPrice']) return
+  if (memberPrice > nonMemberPrice) {
+    addError(ctx, 'memberPrice', 'El precio para socios no puede ser mayor que el precio para no socios.')
+  }
+}
+
 export function parseProductCreate(input: unknown): ValidationResult<ProductInput> {
   const ctx = createContext(input)
   if (!ctx) return createInvalidBody()
+
+  const memberPrice = requiredInteger(ctx, 'memberPrice', 'El precio para socios', 0, PRODUCT_PRICE_MAX, 0)
+  const nonMemberPrice = requiredInteger(
+    ctx,
+    'nonMemberPrice',
+    'El precio para no socios',
+    0,
+    PRODUCT_PRICE_MAX,
+    0,
+  )
+  validateProductPrices(ctx, memberPrice, nonMemberPrice)
 
   const value: ProductInput = {
     name: requiredString(ctx, 'name', 'El nombre', 120) ?? '',
     slug: requiredSlug(ctx, 'slug', 'El slug') ?? '',
     description: requiredString(ctx, 'description', 'La descripción', 3_000) ?? '',
-    price: requiredInteger(ctx, 'price', 'El precio', 0, 100_000_000, 0),
+    memberPrice,
+    nonMemberPrice,
     currency: requiredCurrency(ctx),
     category: requiredString(ctx, 'category', 'La categoría', 60) ?? '',
     imageUrl: optionalUrl(ctx, 'imageUrl', 'La imagen'),
@@ -429,10 +456,18 @@ export function parseProductPatch(input: unknown): ValidationResult<ProductPatch
     const description = requiredString(ctx, 'description', 'La descripción', 3_000)
     if (description !== undefined) patch.description = description
   }
-  if (has(ctx, 'price')) {
-    const price = optionalInteger(ctx, 'price', 'El precio', 0, 100_000_000)
-    if (price !== undefined) patch.price = price
-  }
+  const memberPrice = has(ctx, 'memberPrice')
+    ? optionalInteger(ctx, 'memberPrice', 'El precio para socios', 0, PRODUCT_PRICE_MAX)
+    : undefined
+  if (memberPrice !== undefined) patch.memberPrice = memberPrice
+
+  const nonMemberPrice = has(ctx, 'nonMemberPrice')
+    ? optionalInteger(ctx, 'nonMemberPrice', 'El precio para no socios', 0, PRODUCT_PRICE_MAX)
+    : undefined
+  if (nonMemberPrice !== undefined) patch.nonMemberPrice = nonMemberPrice
+
+  validateProductPrices(ctx, memberPrice, nonMemberPrice)
+
   if (has(ctx, 'currency')) patch.currency = requiredCurrency(ctx)
   if (has(ctx, 'category')) {
     const category = requiredString(ctx, 'category', 'La categoría', 60)

@@ -121,7 +121,8 @@ interface ProductRow {
   name: string
   slug: string
   description: string
-  price: number
+  memberPrice: number
+  nonMemberPrice: number
   currency: string
   category: string
   imageUrl: string | null
@@ -194,7 +195,8 @@ const mapProduct = (row: ProductRow): Product => ({
   name: row.name,
   slug: row.slug,
   description: row.description,
-  price: row.price,
+  memberPrice: row.memberPrice,
+  nonMemberPrice: row.nonMemberPrice,
   currency: row.currency,
   category: row.category,
   imageUrl: row.imageUrl,
@@ -294,7 +296,7 @@ export async function getHistory(env: Env): Promise<RepositoryResult<HistoryMile
   }
 }
 
-/** Productos destacados de la tienda. */
+/** Catálogo público: todos los productos disponibles de la tienda. */
 export async function getProducts(env: Env): Promise<RepositoryResult<Product[]>> {
   try {
     const prisma = await getPrisma(env)
@@ -304,7 +306,6 @@ export async function getProducts(env: Env): Promise<RepositoryResult<Product[]>
       prisma.product.findMany({
         where: { available: true },
         orderBy: [{ featured: 'desc' }, { name: 'asc' }],
-        take: 8,
       }),
     )
     if (rows.length === 0) return fromFixtures(fixtures.products)
@@ -655,7 +656,8 @@ export async function createProduct(env: Env, input: ProductInput): Promise<Prod
           name: input.name,
           slug: input.slug,
           description: input.description,
-          price: input.price,
+          memberPrice: input.memberPrice,
+          nonMemberPrice: input.nonMemberPrice,
           currency: input.currency,
           category: input.category,
           imageUrl: input.imageUrl,
@@ -677,7 +679,8 @@ export async function updateProduct(env: Env, id: string, patch: ProductPatch): 
       name?: string
       slug?: string
       description?: string
-      price?: number
+      memberPrice?: number
+      nonMemberPrice?: number
       currency?: string
       category?: string
       imageUrl?: string | null
@@ -688,7 +691,8 @@ export async function updateProduct(env: Env, id: string, patch: ProductPatch): 
     if (patch.name !== undefined) data.name = patch.name
     if (patch.slug !== undefined) data.slug = patch.slug
     if (patch.description !== undefined) data.description = patch.description
-    if (patch.price !== undefined) data.price = patch.price
+    if (patch.memberPrice !== undefined) data.memberPrice = patch.memberPrice
+    if (patch.nonMemberPrice !== undefined) data.nonMemberPrice = patch.nonMemberPrice
     if (patch.currency !== undefined) data.currency = patch.currency
     if (patch.category !== undefined) data.category = patch.category
     if (patch.imageUrl !== undefined) data.imageUrl = patch.imageUrl

@@ -16,7 +16,7 @@ Portal web institucional del Club Atlético Olimpo Asociación Mutual (Laborde, 
 
 ```bash
 npm install
-cp .env.example .env    # Windows: Copy-Item .env.example .env
+# Creá un archivo .env con las variables de la sección siguiente
 npm run dev
 ```
 
@@ -24,7 +24,7 @@ El portal arranca en `http://localhost:5173`. **No hace falta configurar la base
 
 ## Variables de entorno
 
-`.env` está gitignorado. `.env.example` documenta todas las variables:
+`.env` está gitignorado. Estas son todas las variables disponibles:
 
 | Variable | Obligatoria | Descripción |
 | --- | --- | --- |
@@ -67,6 +67,15 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
    turso db shell olimpo < prisma/schema.sql
    ```
 
+   Si la base **ya existía** antes de incorporar los precios socio/no socio, no vuelvas a correr `schema.sql`. Aplicá la migración manual, que recrea `Product` y copia el precio anterior a ambos campos:
+
+   ```bash
+   turso db shell olimpo < prisma/migrate-product-prices.sql
+   npm run db:generate
+   ```
+
+   Después ajustá el **precio socio** de cada producto desde `/admin`.
+
 4. Cargá los datos iniciales:
 
    ```bash
@@ -74,6 +83,18 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
    ```
 
 Cuando la base esté configurada y tenga filas, la API sirve datos reales (`x-data-source: db`). Si la query falla (p. ej. token inválido), vuelve a fixtures en lugar de romper el sitio.
+
+## Tienda pública y pedidos por WhatsApp
+
+La sección `#shop` (`src/components/home/ShopSection.tsx`) funciona como tienda dentro del portal:
+
+- **Selector “¿Sos socio?” (Sí / No):** cambia todos los precios visibles entre `memberPrice` y `nonMemberPrice`, incluyendo el carrito.
+- **Catálogo completo:** `GET /api/products` devuelve todos los productos disponibles (antes se limitaba a 8). El orden mantiene primero los destacados.
+- **Carrito:** permite agregar productos, sumar/restar cantidades, quitar líneas y ver subtotales y total. En mobile aparece un acceso flotante **Ver pedido** cuando hay artículos.
+- **Cierre por WhatsApp:** el botón **Enviar pedido por WhatsApp** abre `wa.me` con un mensaje que incluye cantidades, nombres, precios unitarios, subtotales, condición de socio y total. No hay pago online: la venta se confirma en la conversación.
+- **Número de destino:** se configura en `shared/fixtures.ts` → `siteLinks.whatsapp`, con formato internacional y solo dígitos (`5493537685333`). El antiguo enlace de catálogo sigue disponible en `siteLinks.shop`.
+
+El carrito vive en memoria: se vacía al recargar la página. Los precios y la disponibilidad se actualizan al volver a cargar el sitio.
 
 # Panel de administración
 
@@ -102,7 +123,7 @@ La sesión se guarda en `sessionStorage` (se pierde al cerrar la pestaña) y se 
 | **Partidos** | Tarjetas con disciplina, rival, fecha/hora, cancha, estado y marcador | Disciplina, equipo, rival, localía, fecha/hora, competencia, estadio, estado y goles |
 | **Noticias** | Portada, categoría, estado (publicada/borrador) y fecha | Título, slug, bajada, cuerpo, categoría, fecha, imagen y publicación |
 | **Sponsors** | Logo, categoría, orden y sitio web | Nombre, categoría, URL, logo y orden |
-| **Productos** | Imagen, precio, categoría y estado (disponible/agotado) | Nombre, slug, descripción, precio, moneda, categoría, imagen, destacado y disponibilidad |
+| **Productos** | Imagen, precios socio/no socio, categoría y estado (disponible/agotado) | Nombre, slug, descripción, precios socio y no socio, moneda, categoría (selector + nueva), imagen, destacado y disponibilidad |
 
 Cada sección incluye:
 
@@ -117,6 +138,8 @@ Cada sección incluye:
 - Los errores se muestran por campo y, si el error no corresponde a un campo (por ejemplo un `409` por slug duplicado), aparece un aviso general.
 - Las fechas usan `<input type="datetime-local">` y se convierten a ISO-8601 antes de enviar, respetando la zona horaria del navegador.
 - Noticias y productos incluyen un botón para **generar el slug** desde el título o nombre (minúsculas, números y guiones).
+- La categoría de un producto se elige con un **selector** que se arma con las categorías ya guardadas en la base. La opción **＋ Nueva categoría…** habilita un campo de texto; si el nombre coincide con una existente (sin importar mayúsculas), se reutiliza para evitar duplicados por errores de tipeo.
+- Los productos guardan **precio socio** y **precio no socio** por separado. La API rechaza un precio socio mayor que el precio general.
 - Los partidos finalizados pueden guardar marcador; las noticias pueden quedar como **borrador** (`published: false`) y los productos como **agotados** (`available: false`), sin desaparecer del panel.
 
 ### Imágenes: subida y URL
@@ -288,14 +311,15 @@ Las respuestas de escritura usan el mismo sobre que las lecturas: `{ data, sourc
 | `name` | string (120) | Sí | — |
 | `slug` | minúsculas, números y guiones (120), único | Sí | — |
 | `description` | string (3000) | Sí | — |
-| `price` | entero (0–100 000 000) | Sí | — |
+| `memberPrice` | entero (0–100 000 000) | Sí | — |
+| `nonMemberPrice` | entero (0–100 000 000) | Sí | — |
 | `currency` | código ISO de 3 letras | No | `ARS` |
 | `category` | string (60) | Sí | — |
 | `imageUrl` | URL de imagen \| null | No | `null` |
 | `featured` | boolean | No | `false` |
 | `available` | boolean | No | `true` |
 
-En `PATCH` solo se validan y actualizan los campos enviados; enviar un objeto vacío devuelve `400`.
+Si se envían ambos precios, `memberPrice` no puede ser mayor que `nonMemberPrice`. En `PATCH` solo se validan y actualizan los campos enviados; enviar un objeto vacío devuelve `400`.
 
 ### Ejemplo: crear una noticia con imagen en la nube
 
@@ -392,6 +416,8 @@ Reglas de validación (`shared/validation.ts` → `optionalUrl`):
 
 ```
 prisma/schema.prisma     modelos (Match, News, Achievement, Sponsor, HistoryMilestone, Product)
+prisma/schema.sql        esquema completo para una base nueva
+prisma/migrate-product-prices.sql  migración manual de precio único → socio/no socio
 generated/prisma/        Prisma Client generado (gitignorado)
 shared/types.ts          DTOs compartidos + payloads de escritura
 shared/validation.ts     validación de payloads (admin) reutilizable por el frontend
@@ -423,6 +449,6 @@ Decisiones clave:
 Los datos de `shared/fixtures.ts` son material de demostración basado en la historia real del club (fundación el 30/08/1911, 16 títulos de la Liga Beccar Varela, Campeón Provincial 2020, etc.):
 
 - **Palmarés:** los ítems de fútbol son los títulos oficiales; los de otras disciplinas son marcadores de diseño y deben completarse con datos verificados.
-- **`siteLinks`:** las URLs de Shop, Streaming y redes sociales son placeholders (`#`) a reemplazar por los links reales del club.
+- **`siteLinks`:** las URLs de catálogo, Streaming y redes sociales son placeholders a reemplazar por los links reales del club. `siteLinks.whatsapp` define el número que recibe los pedidos de la tienda.
 - **Patrocinadores, productos y noticias:** textos de ejemplo listos para sustituir por contenido real desde el panel.
 - **Imágenes:** las columnas `coverUrl`, `logoUrl` e `imageUrl` ya existen en la base; se completan desde el panel con la URL que devuelva el proveedor de almacenamiento.

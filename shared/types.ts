@@ -127,7 +127,10 @@ export interface Product {
   name: string
   slug: string
   description: string
-  price: number
+  /** Precio para socios del club (entero, sin decimales). */
+  memberPrice: number
+  /** Precio para personas que no son socias (entero, sin decimales). */
+  nonMemberPrice: number
   currency: string
   category: string
   /** URL de la imagen (almacenamiento en la nube o ruta local). */
@@ -192,7 +195,8 @@ export interface ProductInput {
   name: string
   slug: string
   description: string
-  price: number
+  memberPrice: number
+  nonMemberPrice: number
   currency: string
   category: string
   imageUrl: string | null

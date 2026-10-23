@@ -18,14 +18,15 @@ import ImageField from '../components/ImageField'
 import ImagePreview from '../components/ImagePreview'
 import SectionHeader from '../components/SectionHeader'
 import { EmptyState, ListError, ListSkeleton } from '../components/ListStates'
-import { CheckboxField, TextAreaField, TextField } from '../components/Field'
+import { CheckboxField, SelectField, TextAreaField, TextField } from '../components/Field'
 import FormFooter from '../components/FormFooter'
 
 interface ProductFormState {
   name: string
   slug: string
   description: string
-  price: string
+  memberPrice: string
+  nonMemberPrice: string
   currency: string
   category: string
   imageUrl: string | null
@@ -37,7 +38,8 @@ const EMPTY_FORM: ProductFormState = {
   name: '',
   slug: '',
   description: '',
-  price: '',
+  memberPrice: '',
+  nonMemberPrice: '',
   currency: 'ARS',
   category: '',
   imageUrl: null,
@@ -45,12 +47,15 @@ const EMPTY_FORM: ProductFormState = {
   available: true,
 }
 
+const NEW_CATEGORY = '__new__'
+
 function productToForm(product: ProductAdminItem): ProductFormState {
   return {
     name: product.name,
     slug: product.slug,
     description: product.description,
-    price: String(product.price),
+    memberPrice: String(product.memberPrice),
+    nonMemberPrice: String(product.nonMemberPrice),
     currency: product.currency,
     category: product.category,
     imageUrl: product.imageUrl,
@@ -64,7 +69,8 @@ function buildPayload(form: ProductFormState) {
     name: form.name,
     slug: form.slug,
     description: form.description,
-    price: form.price.trim() === '' ? Number.NaN : Number(form.price),
+    memberPrice: form.memberPrice.trim() === '' ? Number.NaN : Number(form.memberPrice),
+    nonMemberPrice: form.nonMemberPrice.trim() === '' ? Number.NaN : Number(form.nonMemberPrice),
     currency: form.currency,
     category: form.category,
     imageUrl: form.imageUrl,
@@ -73,12 +79,35 @@ function buildPayload(form: ProductFormState) {
   }
 }
 
+/** Categorías existentes, sin duplicados por mayúsculas/minúsculas. */
+function collectCategories(products: ProductAdminItem[]): string[] {
+  const categories = new Map<string, string>()
+  for (const product of products) {
+    const value = product.category.trim()
+    if (value === '') continue
+    const key = value.toLocaleLowerCase('es')
+    if (!categories.has(key)) categories.set(key, value)
+  }
+  return [...categories.values()].sort((a, b) => a.localeCompare(b, 'es'))
+}
+
+/** Reutiliza la categoría existente si el texto coincide (aunque cambie el caso). */
+function resolveCategory(value: string, categories: string[]): string {
+  const normalized = value.trim().replace(/\s+/g, ' ')
+  if (normalized === '') return ''
+  const existing = categories.find(
+    (category) => category.toLocaleLowerCase('es') === normalized.toLocaleLowerCase('es'),
+  )
+  return existing ?? normalized
+}
+
 export default function ProductsSection() {
   const { notify } = useFeedback()
   const { data: products, status, error, reload } = useAdminResource<ProductAdminItem>('products')
   const [editor, setEditor] = useState<{ item: ProductAdminItem | null } | null>(null)
   const [toDelete, setToDelete] = useState<ProductAdminItem | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const categories = collectCategories(products)
 
   async function handleDelete(): Promise<void> {
     if (!toDelete) return
@@ -134,6 +163,7 @@ export default function ProductsSection() {
       {editor ? (
         <ProductFormModal
           item={editor.item}
+          categories={categories}
           onClose={() => setEditor(null)}
           onSaved={(message) => {
             setEditor(null)
@@ -201,9 +231,15 @@ function ProductCard({
           <h3 className="mt-1.5 line-clamp-2 font-display text-lg font-bold uppercase leading-tight text-azul">
             {product.name}
           </h3>
-          <p className="font-display text-base font-extrabold text-azul">
-            {formatPrice(product.price, product.currency)}
-          </p>
+          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="font-display text-base font-extrabold text-azul">
+              {formatPrice(product.memberPrice, product.currency)}
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">socio</span>
+            <span className="text-xs text-slate-400">
+              / {formatPrice(product.nonMemberPrice, product.currency)} no socio
+            </span>
+          </div>
           <p className="truncate text-xs text-slate-500">{product.category}</p>
         </div>
       </div>
@@ -214,7 +250,7 @@ function ProductCard({
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-azul/5 hover:text-azul"
+            className="cursor-pointer rounded-lg p-2 text-slate-400 transition hover:bg-azul/5 hover:text-azul"
             aria-label={`Editar ${product.name}`}
           >
             <Pencil className="h-4 w-4" aria-hidden />
@@ -222,7 +258,7 @@ function ProductCard({
           <button
             type="button"
             onClick={onDelete}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+            className="cursor-pointer rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
             aria-label={`Eliminar ${product.name}`}
           >
             <Trash2 className="h-4 w-4" aria-hidden />
@@ -237,17 +273,37 @@ function ProductCard({
 
 function ProductFormModal({
   item,
+  categories,
   onClose,
   onSaved,
 }: {
   item: ProductAdminItem | null
+  categories: string[]
   onClose: () => void
   onSaved: (message: string) => void
 }) {
   const [form, setForm] = useState<ProductFormState>(() => (item ? productToForm(item) : EMPTY_FORM))
+  const [newCategory, setNewCategory] = useState(() => {
+    if (!item) return categories.length === 0
+    return !categories.some(
+      (category) => category.toLocaleLowerCase('es') === item.category.toLocaleLowerCase('es'),
+    )
+  })
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [generalError, setGeneralError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+
+  const categoryOptions = [...categories]
+  if (
+    item &&
+    item.category.trim() !== '' &&
+    !categoryOptions.some(
+      (category) => category.toLocaleLowerCase('es') === item.category.toLocaleLowerCase('es'),
+    )
+  ) {
+    categoryOptions.push(item.category)
+  }
+  categoryOptions.sort((a, b) => a.localeCompare(b, 'es'))
 
   function update<K extends keyof ProductFormState>(key: K, value: ProductFormState[K]): void {
     setForm((current) => ({ ...current, [key]: value }))
@@ -263,7 +319,9 @@ function ProductFormModal({
     event.preventDefault()
     setGeneralError(null)
 
-    const parsed = parseProductCreate(buildPayload(form))
+    const parsed = parseProductCreate(
+      buildPayload({ ...form, category: resolveCategory(form.category, categoryOptions) }),
+    )
     if (!parsed.ok) {
       setFieldErrors(parsed.errors)
       setGeneralError('Revisá los campos marcados.')
@@ -324,46 +382,93 @@ function ProductFormModal({
             hint="Minúsculas, números y guiones."
           />
 
-          <TextField
-            label="Categoría"
-            required
-            maxLength={60}
-            placeholder="Indumentaria"
-            value={form.category}
-            onChange={(event) => update('category', event.target.value)}
-            error={fieldErrors['category']}
-          />
+          <div className="flex flex-col gap-4">
+            <SelectField
+              label="Categoría"
+              required
+              value={newCategory ? NEW_CATEGORY : form.category}
+              onChange={(event) => {
+                const value = event.target.value
+                if (value === NEW_CATEGORY) {
+                  setNewCategory(true)
+                  update('category', '')
+                  return
+                }
+                setNewCategory(false)
+                update('category', value)
+              }}
+              error={newCategory ? undefined : fieldErrors['category']}
+              hint="Se cargan las categorías existentes en la base."
+            >
+              <option value="" disabled>
+                Seleccioná una categoría…
+              </option>
+              {categoryOptions.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+              <option value={NEW_CATEGORY}>＋ Nueva categoría…</option>
+            </SelectField>
 
-          <div className="grid grid-cols-[1fr_5.5rem] gap-2">
-            <TextField
-              label="Precio"
-              type="number"
-              inputMode="numeric"
-              min={0}
-              max={100_000_000}
-              required
-              placeholder="42999"
-              value={form.price}
-              onChange={(event) => update('price', event.target.value)}
-              error={fieldErrors['price']}
-            />
-            <TextField
-              label="Moneda"
-              required
-              maxLength={3}
-              placeholder="ARS"
-              value={form.currency}
-              onChange={(event) => update('currency', event.target.value.toUpperCase())}
-              error={fieldErrors['currency']}
-            />
+            {newCategory ? (
+              <TextField
+                label="Nueva categoría"
+                required
+                maxLength={60}
+                placeholder="Indumentaria"
+                value={form.category}
+                onChange={(event) => update('category', event.target.value)}
+                error={fieldErrors['category']}
+                hint="Se agrega a las categorías disponibles para los próximos productos."
+              />
+            ) : null}
           </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-[1fr_1fr_5.5rem]">
+          <TextField
+            label="Precio socio"
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={100_000_000}
+            required
+            placeholder="37999"
+            value={form.memberPrice}
+            onChange={(event) => update('memberPrice', event.target.value)}
+            error={fieldErrors['memberPrice']}
+            hint="Con credencial de socio vigente."
+          />
+          <TextField
+            label="Precio no socio"
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={100_000_000}
+            required
+            placeholder="42999"
+            value={form.nonMemberPrice}
+            onChange={(event) => update('nonMemberPrice', event.target.value)}
+            error={fieldErrors['nonMemberPrice']}
+            hint="Precio general de la tienda."
+          />
+          <TextField
+            label="Moneda"
+            required
+            maxLength={3}
+            placeholder="ARS"
+            value={form.currency}
+            onChange={(event) => update('currency', event.target.value.toUpperCase())}
+            error={fieldErrors['currency']}
+          />
         </div>
 
         <button
           type="button"
           onClick={() => update('slug', slugify(form.name))}
           disabled={form.name.trim() === ''}
-          className="inline-flex items-center gap-1.5 rounded-full border border-azul/20 px-3 py-1 text-xs font-semibold text-azul transition hover:border-azul hover:bg-azul hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-azul/20 px-3 py-1 text-xs font-semibold text-azul transition hover:border-azul hover:bg-azul hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Sparkles className="h-3.5 w-3.5" aria-hidden />
           Generar slug desde el nombre
