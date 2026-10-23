@@ -128,7 +128,7 @@ export default function ProductsSection() {
     <>
       <SectionHeader
         title="Productos de la tienda"
-        description="Indumentaria y artículos oficiales. Los productos disponibles se muestran en la sección Tienda del portal."
+        description="Indumentaria y artículos oficiales. Los productos disponibles se muestran en la página Tienda del sitio."
         count={products.length}
         countLabel={products.length === 1 ? 'producto' : 'productos'}
         onNew={() => setEditor({ item: null })}
@@ -349,7 +349,7 @@ function ProductFormModal({
     <AdminModal
       open
       title={item ? 'Editar producto' : 'Nuevo producto'}
-      description="La imagen y la descripción se publican en la sección Tienda del sitio."
+      description="La imagen y la descripción se publican en la página Tienda del sitio."
       onClose={onClose}
       closeDisabled={saving}
     >

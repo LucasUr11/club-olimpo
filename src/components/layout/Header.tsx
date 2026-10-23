@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Menu, X, ShoppingBag, Play, MapPin } from 'lucide-react'
 import ButtonLink from '../ui/ButtonLink'
 import { siteLinks } from '../../../shared/fixtures'
+import { homeHref, isShopRoute } from '../../lib/routes'
 
 const NAV_ITEMS = [
   { href: '#inicio', label: 'Inicio' },
@@ -15,6 +16,8 @@ const NAV_ITEMS = [
 /** Barra de navegación institucional (sticky) con accesos a Shop y Streaming. */
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const onShopPage = isShopRoute()
+  const shopHref = onShopPage ? '#catalogo' : '/tienda'
 
   return (
     <header className="sticky top-0 z-50">
@@ -33,7 +36,7 @@ export default function Header() {
       <div className="border-b-4 border-amarillo bg-azul text-white shadow-xl shadow-azul-950/25">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:px-6">
           {/* Logo + wordmark */}
-          <a href="#inicio" className="flex shrink-0 items-center gap-3" aria-label="Ir al inicio">
+          <a href={homeHref('#inicio')} className="flex shrink-0 items-center gap-3" aria-label="Ir al inicio">
             <img
               src="/olimpo-logo.png"
               alt="Escudo del Club Atlético Olimpo Asociación Mutual"
@@ -54,7 +57,7 @@ export default function Header() {
             {NAV_ITEMS.map((item) => (
               <a
                 key={item.href}
-                href={item.href}
+                href={homeHref(item.href)}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-white/85 transition hover:bg-white/10 hover:text-amarillo"
               >
                 {item.label}
@@ -64,7 +67,7 @@ export default function Header() {
 
           {/* Accesos directos */}
           <div className="hidden items-center gap-2 md:flex">
-            <ButtonLink href="#shop" variant="accent" size="sm" icon={<ShoppingBag className="h-4 w-4" aria-hidden />}>
+            <ButtonLink href={shopHref} variant="accent" size="sm" icon={<ShoppingBag className="h-4 w-4" aria-hidden />}>
               Shop
             </ButtonLink>
             <ButtonLink href={siteLinks.streaming} variant="outline-light" size="sm" icon={<Play className="h-4 w-4" aria-hidden />}>
@@ -95,7 +98,7 @@ export default function Header() {
             {NAV_ITEMS.map((item) => (
               <a
                 key={item.href}
-                href={item.href}
+                href={homeHref(item.href)}
                 onClick={() => setMenuOpen(false)}
                 className="rounded-lg px-3 py-3 text-base font-medium text-white/85 transition hover:bg-white/10 hover:text-amarillo"
               >
@@ -104,7 +107,7 @@ export default function Header() {
             ))}
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-4">
               <ButtonLink
-                href="#shop"
+                href={shopHref}
                 variant="accent"
                 icon={<ShoppingBag className="h-4 w-4" aria-hidden />}
                 onClick={() => setMenuOpen(false)}

@@ -84,17 +84,24 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
 Cuando la base esté configurada y tenga filas, la API sirve datos reales (`x-data-source: db`). Si la query falla (p. ej. token inválido), vuelve a fixtures en lugar de romper el sitio.
 
-## Tienda pública y pedidos por WhatsApp
+## Tienda pública (`/tienda`) y pedidos por WhatsApp
 
-La sección `#shop` (`src/components/home/ShopSection.tsx`) funciona como tienda dentro del portal:
+La tienda dejó de ser una sección de la landing y ahora es una **vista dedicada** en la ruta `/tienda`. `src/App.tsx` la carga de forma diferida y `src/lib/routes.ts` centraliza la detección de rutas. El header y el footer enlazan a `/tienda`; desde la tienda, los enlaces institucionales vuelven a las secciones del inicio (`/#partidos`, `/#noticias`, etc.).
 
-- **Selector “¿Sos socio?” (Sí / No):** cambia todos los precios visibles entre `memberPrice` y `nonMemberPrice`, incluyendo el carrito.
-- **Catálogo completo:** `GET /api/products` devuelve todos los productos disponibles (antes se limitaba a 8). El orden mantiene primero los destacados.
-- **Carrito:** permite agregar productos, sumar/restar cantidades, quitar líneas y ver subtotales y total. En mobile aparece un acceso flotante **Ver pedido** cuando hay artículos.
+La vista principal vive en `src/components/shop/ShopPage.tsx` e incluye:
+
+- **Categorías arriba:** pestañas horizontales construidas con las categorías reales de los productos cargados desde `GET /api/products` (o los fixtures como fallback). Muestran la cantidad de productos por categoría y filtran el catálogo sin recargar.
+- **Tarjetas rediseñadas:** imagen dentro de un contenedor cuadrado, con `object-contain`, fondo institucional y proporción uniforme para que todos los productos se vean limpios. Cada tarjeta muestra categoría, nombre, descripción corta, precio según la condición del comprador y acceso al detalle.
+- **Modal de detalle:** al tocar la imagen o el nombre de un producto se abre un modal de dos columnas. A la izquierda va la imagen grande; a la derecha, el título, la descripción completa, los precios **Socio** y **No socio**, el selector de cantidad y el botón para agregar al carrito con el total calculado.
+- **Selector “¿Sos socio?” (Sí / No):** cambia todos los precios visibles entre `memberPrice` y `nonMemberPrice`, incluyendo tarjetas, modal y carrito. También resalta el precio que corresponde a la condición elegida.
+- **Catálogo completo:** `GET /api/products` devuelve todos los productos disponibles. El orden mantiene primero los destacados.
+- **Carrito:** permite agregar productos, sumar/restar cantidades, quitar líneas, vaciarlo y ver subtotales y total. En mobile aparece un acceso flotante **Ver pedido** cuando hay artículos.
 - **Cierre por WhatsApp:** el botón **Enviar pedido por WhatsApp** abre `wa.me` con un mensaje que incluye cantidades, nombres, precios unitarios, subtotales, condición de socio y total. No hay pago online: la venta se confirma en la conversación.
 - **Número de destino:** se configura en `shared/fixtures.ts` → `siteLinks.whatsapp`, con formato internacional y solo dígitos (`5493537685333`). El antiguo enlace de catálogo sigue disponible en `siteLinks.shop`.
 
-El carrito vive en memoria: se vacía al recargar la página. Los precios y la disponibilidad se actualizan al volver a cargar el sitio.
+Los componentes de la tienda están separados en `ProductCard.tsx`, `ProductDetailModal.tsx`, `CartPanel.tsx` y `cart.ts` (cálculos y armado del mensaje). El carrito vive en memoria: se vacía al recargar la página. Los precios y la disponibilidad se actualizan al volver a cargar el sitio.
+
+Para desplegar, el hosting debe reescribir las rutas `/tienda` y `/admin` a `index.html`, igual que cualquier SPA.
 
 # Panel de administración
 
@@ -427,13 +434,14 @@ server/errors.ts         ApiError (status + código estable)
 server/auth.ts           login, tokens HMAC, revocación y límite de intentos
 server/repositories.ts   lecturas con fallback + listados y escrituras de administración
 server/api.ts            plugin Vite: rutas públicas, auth y CRUD /api/admin/*
-src/components/          Header, Footer, Hero, NextMatches, NewsCarousel, History,
-                         Palmares, Sponsors, Shop, Streaming, íconos
+src/components/          Header, Footer, secciones de la landing, íconos y UI compartida
+src/components/shop/     ShopPage, ProductCard, ProductDetailModal, CartPanel y lógica del carrito
 src/admin/               panel: login, shell, secciones CRUD y componentes
 src/hooks/useApi.ts      fetch con cache; arranca con fixtures y reemplaza al llegar la respuesta
 src/lib/api.ts           cliente HTTP tipado del sitio público
 src/lib/adminApi.ts      cliente autenticado del panel (token, errores, 401 global)
 src/lib/imageUpload.ts   subida directa de imágenes a Cloudinary (unsigned)
+src/lib/routes.ts        detección de rutas públicas (`/tienda`, `/admin`) y enlaces al inicio
 ```
 
 Decisiones clave:

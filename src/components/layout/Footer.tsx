@@ -2,6 +2,7 @@ import { Mail, MapPin, Handshake } from 'lucide-react'
 import { FacebookIcon, InstagramIcon, YoutubeIcon } from '../icons/SocialIcons'
 import ButtonLink from '../ui/ButtonLink'
 import { club, siteLinks } from '../../../shared/fixtures'
+import { homeHref } from '../../lib/routes'
 
 const FOOTER_LINKS = [
   { href: '#partidos', label: 'Próximos partidos' },
@@ -9,7 +10,6 @@ const FOOTER_LINKS = [
   { href: '#historia', label: 'Historia' },
   { href: '#palmares', label: 'Palmarés' },
   { href: '#sponsors', label: 'Sponsors' },
-  { href: '#shop', label: 'Tienda oficial' },
 ] as const
 
 const SOCIAL_LINKS = [
@@ -53,13 +53,18 @@ export default function Footer() {
             {FOOTER_LINKS.map((link) => (
               <li key={link.href}>
                 <a
-                  href={link.href}
+                  href={homeHref(link.href)}
                   className="text-sm text-white/65 transition hover:text-amarillo"
                 >
                   {link.label}
                 </a>
               </li>
             ))}
+            <li>
+              <a href="/tienda" className="text-sm text-white/65 transition hover:text-amarillo">
+                Tienda oficial
+              </a>
+            </li>
           </ul>
         </nav>
 
