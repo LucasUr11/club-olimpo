@@ -159,7 +159,7 @@ export default function NewsCarousel() {
                   type="button"
                   onClick={() => goTo(index - 1)}
                   aria-label="Noticia anterior"
-                  className="absolute left-3 top-1/2 hidden -translate-y-1/2 rounded-full border border-white/20 bg-azul-950/70 p-2.5 text-white/80 backdrop-blur transition hover:border-amarillo hover:bg-amarillo hover:text-azul sm:block"
+                  className="absolute left-3 top-1/2 hidden -translate-y-1/2 cursor-pointer rounded-full border border-white/20 bg-azul-950/70 p-2.5 text-white/80 backdrop-blur transition hover:border-amarillo hover:bg-amarillo hover:text-azul sm:block"
                 >
                   <ChevronLeft className="h-5 w-5" aria-hidden />
                 </button>
@@ -167,7 +167,7 @@ export default function NewsCarousel() {
                   type="button"
                   onClick={() => goTo(index + 1)}
                   aria-label="Noticia siguiente"
-                  className="absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-full border border-white/20 bg-azul-950/70 p-2.5 text-white/80 backdrop-blur transition hover:border-amarillo hover:bg-amarillo hover:text-azul sm:block"
+                  className="absolute right-3 top-1/2 hidden -translate-y-1/2 cursor-pointer rounded-full border border-white/20 bg-azul-950/70 p-2.5 text-white/80 backdrop-blur transition hover:border-amarillo hover:bg-amarillo hover:text-azul sm:block"
                 >
                   <ChevronRight className="h-5 w-5" aria-hidden />
                 </button>
@@ -186,7 +186,7 @@ export default function NewsCarousel() {
                   aria-label={`Ir a la noticia ${itemIndex + 1}: ${item.title}`}
                   aria-current={itemIndex === index}
                   className={cn(
-                    'h-2 rounded-full transition-all',
+                    'h-2 cursor-pointer rounded-full transition-all',
                     itemIndex === index ? 'w-8 bg-amarillo' : 'w-2 bg-white/30 hover:bg-white/60',
                   )}
                 />
@@ -201,7 +201,7 @@ export default function NewsCarousel() {
                 type="button"
                 onClick={() => setPaused((value) => !value)}
                 aria-label={paused ? 'Reanudar carrusel' : 'Pausar carrusel'}
-                className="rounded-full border border-white/20 p-2 text-white/70 transition hover:border-amarillo hover:text-amarillo"
+                className="cursor-pointer rounded-full border border-white/20 p-2 text-white/70 transition hover:border-amarillo hover:text-amarillo"
               >
                 {paused ? (
                   <Play className="h-4 w-4" aria-hidden />

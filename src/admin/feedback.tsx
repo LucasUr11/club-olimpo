@@ -82,7 +82,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => dismiss(toast.id)}
-              className="-mr-1 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              className="-mr-1 cursor-pointer rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
               aria-label="Cerrar aviso"
             >
               <X className="h-4 w-4" aria-hidden />

@@ -83,7 +83,7 @@ export default function HistorySection() {
                 <button
                   type="button"
                   onClick={() => setExpanded((value) => !value)}
-                  className="rounded-full border border-azul/30 px-6 py-3 text-sm font-semibold text-azul transition hover:bg-azul hover:text-white"
+                  className="cursor-pointer rounded-full border border-azul/30 px-6 py-3 text-sm font-semibold text-azul transition hover:bg-azul hover:text-white"
                   aria-expanded={expanded}
                 >
                   {expanded

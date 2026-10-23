@@ -113,7 +113,7 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
               <button
                 type="button"
                 onClick={() => setVisible((current) => !current)}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-md p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                 aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {visible ? <EyeOff className="h-4 w-4" aria-hidden /> : <Eye className="h-4 w-4" aria-hidden />}
@@ -130,7 +130,7 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
           <button
             type="submit"
             disabled={submitting}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-amarillo px-6 py-3 text-sm font-bold text-azul shadow-lg shadow-amarillo/25 transition hover:bg-amarillo-dark active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-5 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-amarillo px-6 py-3 text-sm font-bold text-azul shadow-lg shadow-amarillo/25 transition hover:bg-amarillo-dark active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
             {submitting ? 'Verificando…' : 'Ingresar al panel'}

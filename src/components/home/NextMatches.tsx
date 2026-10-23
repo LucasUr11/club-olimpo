@@ -102,7 +102,7 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'rounded-full border px-4 py-2 text-sm font-semibold transition',
+        'cursor-pointer rounded-full border px-4 py-2 text-sm font-semibold transition',
         active
           ? 'border-azul bg-azul text-white shadow-md shadow-azul/20'
           : 'border-slate-200 bg-white text-slate-600 hover:border-azul/40 hover:text-azul',

@@ -31,7 +31,7 @@ export function ListError({ message, onRetry }: { message: string; onRetry: () =
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center gap-2 rounded-full border border-red-300 bg-white px-4 py-2 text-xs font-semibold text-red-700 transition hover:border-red-400"
+        className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-red-300 bg-white px-4 py-2 text-xs font-semibold text-red-700 transition hover:border-red-400"
       >
         <RefreshCw className="h-3.5 w-3.5" aria-hidden />
         Reintentar
@@ -60,7 +60,7 @@ export function EmptyState({ title, description, actionLabel, onAction, icon }: 
         <button
           type="button"
           onClick={onAction}
-          className="mt-1 rounded-full bg-amarillo px-5 py-2.5 text-sm font-bold text-azul transition hover:bg-amarillo-dark"
+          className="mt-1 cursor-pointer rounded-full bg-amarillo px-5 py-2.5 text-sm font-bold text-azul transition hover:bg-amarillo-dark"
         >
           {actionLabel}
         </button>

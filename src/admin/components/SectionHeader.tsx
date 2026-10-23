@@ -37,7 +37,7 @@ export default function SectionHeader({
         <button
           type="button"
           onClick={onNew}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-azul px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-azul/20 transition hover:bg-azul-700 active:scale-[0.98] sm:flex-none"
+          className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-azul px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-azul/20 transition hover:bg-azul-700 active:scale-[0.98] sm:flex-none"
         >
           <Plus className="h-4 w-4" aria-hidden />
           {newLabel}

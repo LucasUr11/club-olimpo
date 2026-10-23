@@ -38,7 +38,7 @@ export default function ButtonLink({
   return (
     <a
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.98]',
+        'inline-flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.98]',
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],
         className,

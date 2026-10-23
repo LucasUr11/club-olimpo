@@ -247,7 +247,7 @@ function MatchCard({
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-azul/5 hover:text-azul"
+            className="cursor-pointer rounded-lg p-2 text-slate-400 transition hover:bg-azul/5 hover:text-azul"
             aria-label={`Editar partido contra ${match.opponent}`}
           >
             <Pencil className="h-4 w-4" aria-hidden />
@@ -255,7 +255,7 @@ function MatchCard({
           <button
             type="button"
             onClick={onDelete}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+            className="cursor-pointer rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
             aria-label={`Eliminar partido contra ${match.opponent}`}
           >
             <Trash2 className="h-4 w-4" aria-hidden />

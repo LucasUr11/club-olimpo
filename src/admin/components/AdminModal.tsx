@@ -76,7 +76,7 @@ export default function AdminModal({
             type="button"
             onClick={onClose}
             disabled={closeDisabled}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="cursor-pointer rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Cerrar"
           >
             <X className="h-5 w-5" aria-hidden />

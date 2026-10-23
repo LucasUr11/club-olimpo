@@ -108,7 +108,7 @@ export default function ImageField({ label, value, onChange, error, hint, requir
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading || !IMAGE_UPLOAD_CONFIGURED}
-          className="inline-flex items-center gap-1.5 rounded-full border border-azul/25 px-3 py-1.5 text-xs font-semibold text-azul transition hover:border-azul hover:bg-azul hover:text-white disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400 disabled:hover:bg-transparent"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-azul/25 px-3 py-1.5 text-xs font-semibold text-azul transition hover:border-azul hover:bg-azul hover:text-white disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400 disabled:hover:bg-transparent"
           title={IMAGE_UPLOAD_CONFIGURED ? 'Subir una imagen' : 'Configurá Cloudinary para subir archivos'}
         >
           <UploadCloud className="h-3.5 w-3.5" aria-hidden />
@@ -123,7 +123,7 @@ export default function ImageField({ label, value, onChange, error, hint, requir
               onChange(null)
             }}
             disabled={uploading}
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500 transition hover:border-red-300 hover:text-red-600 disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500 transition hover:border-red-300 hover:text-red-600 disabled:opacity-50"
           >
             <X className="h-3.5 w-3.5" aria-hidden />
             Quitar

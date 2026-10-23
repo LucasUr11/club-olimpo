@@ -213,7 +213,7 @@ function NewsCard({
         <button
           type="button"
           onClick={onEdit}
-          className="rounded-lg p-2 text-slate-400 transition hover:bg-azul/5 hover:text-azul"
+          className="cursor-pointer rounded-lg p-2 text-slate-400 transition hover:bg-azul/5 hover:text-azul"
           aria-label={`Editar noticia ${item.title}`}
         >
           <Pencil className="h-4 w-4" aria-hidden />
@@ -221,7 +221,7 @@ function NewsCard({
         <button
           type="button"
           onClick={onDelete}
-          className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+          className="cursor-pointer rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
           aria-label={`Eliminar noticia ${item.title}`}
         >
           <Trash2 className="h-4 w-4" aria-hidden />
@@ -325,7 +325,7 @@ function NewsFormModal({
             type="button"
             onClick={() => update('slug', slugify(form.title))}
             disabled={form.title.trim() === ''}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-azul/20 px-3 py-1 text-xs font-semibold text-azul transition hover:border-azul hover:bg-azul hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-2 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-azul/20 px-3 py-1 text-xs font-semibold text-azul transition hover:border-azul hover:bg-azul hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             Generar desde el título
