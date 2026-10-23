@@ -7,7 +7,7 @@
 // ============================================================================
 
 import { PrismaLibSql } from '@prisma/adapter-libsql'
-import { PrismaClient } from '../generated/prisma/client'
+import { PrismaClient } from '../generated/prisma/client.js'
 
 /** Variables de entorno (provenientes de .env vía loadEnv en vite.config.ts). */
 export type Env = Record<string, string>
