@@ -1,5 +1,5 @@
 // ============================================================================
-// API del portal — plugin de Vite (sin Express ni servidores paralelos)
+// API del portal — router compartido (Vite plugin + Vercel Function)
 // ----------------------------------------------------------------------------
 // Público:
 //   GET  /api/health | matches | news | achievements | sponsors | history | products
@@ -107,10 +107,43 @@ function validationError(errors: ValidationErrors): ApiError {
 }
 
 function clientKey(req: IncomingMessage): string {
+  const forwarded = req.headers['x-forwarded-for']
+  const header = Array.isArray(forwarded) ? forwarded[0] : forwarded
+  if (typeof header === 'string') {
+    const first = header.split(',')[0]?.trim()
+    if (first) return first
+  }
   return req.socket.remoteAddress ?? 'desconocido'
 }
 
 async function readJsonBody(req: IncomingMessage): Promise<unknown> {
+  // Vercel puede entregar el cuerpo ya parseado en `req.body`. Vite no lo hace,
+  // así que primero revisamos esa vía y si no existe leemos el stream node:http.
+  const preParsed = (req as IncomingMessage & { body?: unknown }).body
+  if (preParsed !== undefined) {
+    if (Buffer.isBuffer(preParsed)) {
+      if (preParsed.length === 0) {
+        throw new ApiError(400, 'invalid_json', 'El cuerpo de la solicitud está vacío.')
+      }
+      try {
+        return JSON.parse(preParsed.toString('utf8')) as unknown
+      } catch {
+        throw new ApiError(400, 'invalid_json', 'El cuerpo de la solicitud no es JSON válido.')
+      }
+    }
+    if (typeof preParsed === 'string') {
+      if (preParsed.length === 0) {
+        throw new ApiError(400, 'invalid_json', 'El cuerpo de la solicitud está vacío.')
+      }
+      try {
+        return JSON.parse(preParsed) as unknown
+      } catch {
+        throw new ApiError(400, 'invalid_json', 'El cuerpo de la solicitud no es JSON válido.')
+      }
+    }
+    return preParsed
+  }
+
   const chunks: Buffer[] = []
   let size = 0
 
@@ -313,7 +346,7 @@ function sendAdminResult(res: ServerResponse, status: number, data: unknown): vo
 
 // ── Router ─────────────────────────────────────────────────────────────────
 
-async function handleRequest(req: IncomingMessage, res: ServerResponse, env: Env): Promise<void> {
+async function routeApiRequest(req: IncomingMessage, res: ServerResponse, env: Env): Promise<void> {
   const method = (req.method ?? 'GET').toUpperCase()
   const url = new URL(req.url ?? '/', 'http://localhost')
   const path = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, '') : url.pathname
@@ -389,6 +422,44 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, env: Env
   throw new ApiError(404, 'not_found', `Ruta no encontrada: ${path}`)
 }
 
+/**
+ * Punto de entrada de la API independiente del runtime.
+ * Lo usan tanto el plugin de Vite (dev/preview) como la función de Vercel.
+ */
+export async function handleApiRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  env: Env,
+): Promise<void> {
+  try {
+    await routeApiRequest(req, res, env)
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      if (!res.headersSent) {
+        sendJson(res, error.status, {
+          error: {
+            code: error.code,
+            message: error.message,
+            ...(error.details ? { details: error.details } : {}),
+          },
+        })
+      } else {
+        res.end()
+      }
+      return
+    }
+
+    console.error('[club-olimpo/api] error:', error)
+    if (!res.headersSent) {
+      sendJson(res, 500, {
+        error: { code: 'internal_error', message: 'Error interno de la API.' },
+      })
+    } else {
+      res.end()
+    }
+  }
+}
+
 function registerApi(middlewares: Connect.Server, env: Env): void {
   middlewares.use((req, res, next) => {
     const path = (req.url ?? '').split('?')[0] ?? ''
@@ -397,31 +468,7 @@ function registerApi(middlewares: Connect.Server, env: Env): void {
       return
     }
 
-    void handleRequest(req, res, env).catch((error: unknown) => {
-      if (error instanceof ApiError) {
-        if (!res.headersSent) {
-          sendJson(res, error.status, {
-            error: {
-              code: error.code,
-              message: error.message,
-              ...(error.details ? { details: error.details } : {}),
-            },
-          })
-        } else {
-          res.end()
-        }
-        return
-      }
-
-      console.error('[club-olimpo/api] error:', error)
-      if (!res.headersSent) {
-        sendJson(res, 500, {
-          error: { code: 'internal_error', message: 'Error interno de la API.' },
-        })
-      } else {
-        res.end()
-      }
-    })
+    void handleApiRequest(req, res, env)
   })
 }
 

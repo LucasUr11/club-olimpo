@@ -19,5 +19,5 @@
     "noFallthroughCasesInSwitch": true,
     "erasableSyntaxOnly": true
   },
-  "include": ["src", "server", "shared", "prisma", "vite.config.ts", "prisma.config.ts"]
+  "include": ["src", "server", "shared", "prisma", "api", "vite.config.ts", "prisma.config.ts"]
 }

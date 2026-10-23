@@ -4,7 +4,7 @@ Portal web institucional del Club Atlético Olimpo Asociación Mutual (Laborde, 
 
 - **Frontend:** React 19 + TypeScript + Vite + Tailwind CSS 4
 - **Base de datos:** Turso (SQLite en la nube) vía Prisma ORM 7 + `@prisma/adapter-libsql`
-- **API:** middleware liviano dentro del propio Vite (sin servidor Express paralelo)
+- **API:** router liviano compartido; plugin de Vite en local y Vercel Function en producción (sin Express)
 - **Diseño:** Mobile First, paleta institucional azul `#212062` y amarillo `#FBD800`
 
 ## Requisitos
@@ -84,6 +84,56 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
 Cuando la base esté configurada y tenga filas, la API sirve datos reales (`x-data-source: db`). Si la query falla (p. ej. token inválido), vuelve a fixtures en lugar de romper el sitio.
 
+## Despliegue en Vercel
+
+El proyecto incluye la configuración necesaria para desplegar el frontend y la API juntos en Vercel:
+
+- **`vercel.json`** define el build (`npm run build`), la salida (`dist/`) y las reescrituras:
+  - `/api/(.*)` → `/api`: todas las rutas de la API entran por la función `api/index.ts`, que Vercel expone en `/api`.
+  - `/(.*)` → `/index.html`: fallback SPA para `/admin`, `/tienda` y cualquier ruta del cliente. Los archivos estáticos existentes tienen prioridad sobre esta regla.
+- **`api/index.ts`** es el adaptador de Vercel: recibe `req`/`res` de Node, toma las variables desde `process.env` y delega en `handleApiRequest()` de `server/api.ts`, la misma lógica que usa el plugin de Vite en desarrollo.
+- **`server/env.ts`** convierte `process.env` al tipo `Env` que consumen la API, Prisma y la autenticación.
+- **`postinstall`** ejecuta `prisma generate` durante el build de Vercel, por lo que el cliente generado no necesita estar commiteado.
+
+### Pasos
+
+1. Importá el repositorio en Vercel y dejá que detecte el proyecto **Vite** (o elegí “Other”). La configuración de `vercel.json` ya define build y salida.
+2. En **Project Settings → Environment Variables**, cargá las variables para Production y Preview:
+
+   ```text
+   DATABASE_URL=libsql://TU-BASE.turso.io
+   TURSO_AUTH_TOKEN=eyJ...
+   ADMIN_PASSWORD=una-contraseña-larga
+   SESSION_SECRET=un-secreto-aleatorio
+   ADMIN_SESSION_HOURS=12
+   VITE_CLOUDINARY_CLOUD_NAME=tu-cloud
+   VITE_CLOUDINARY_UPLOAD_PRESET=tu-preset
+   ```
+
+   `DATABASE_URL`, `TURSO_AUTH_TOKEN`, `ADMIN_PASSWORD` y `SESSION_SECRET` son secretos: no deben ir en el repositorio. Las variables `VITE_*` se incorporan al bundle durante el build, así que se deben definir **antes** de desplegar y cambiarlas requiere un nuevo deployment.
+
+3. Desplegá. Vercel ejecutará `npm install` (con `prisma generate`), luego `npm run build` y publicará `dist/` junto con `api/index.ts`.
+
+### Verificación posterior
+
+```bash
+curl -i https://TU-DOMINIO.vercel.app/api/health
+curl -i https://TU-DOMINIO.vercel.app/api/products
+curl -i https://TU-DOMINIO.vercel.app/api/news
+curl -I https://TU-DOMINIO.vercel.app/admin
+curl -I https://TU-DOMINIO.vercel.app/tienda
+```
+
+`/api/health` y `/api/products` deben responder `200` con JSON. Si Turso está configurado, el header `x-data-source` será `db`; si no, verás `fixtures`. `/admin` y `/tienda` deben devolver `200 text/html` (el `index.html` de la SPA), incluso al recargar o abrir la URL directamente.
+
+### Notas
+
+- No se usa `api/[...path].ts`: Vercel no soporta catch-all estilo Next.js en funciones fuera de Next. Por eso hay una función `api/index.ts` (expuesta por Vercel en `/api`) y la rewrite explícita `/api/(.*)`, que preserva la URL original en `req.url` para que el router interno resuelva `/api/auth/*` y `/api/admin/*/:id`.
+- Las rewrites de Vercel se evalúan en orden: la API va antes del fallback SPA para que `/api/*` nunca termine sirviendo `index.html`.
+- `api/index.ts` debe ejecutarse con el **Node.js runtime** (no Edge): usa `node:crypto`, Prisma y el adaptador libSQL/Turso.
+- La autenticación y el límite de intentos siguen siendo **en memoria**. En Vercel cada instancia/cold start tiene su propio estado; para despliegues con mucho tráfico conviene mover revocación y rate limit a Turso o Redis.
+- El flujo local no cambia: `npm run dev` usa el plugin de Vite y no requiere Vercel CLI. `npm run preview` también sigue sirviendo `/api/*` desde Vite.
+
 ## Tienda pública (`/tienda`) y pedidos por WhatsApp
 
 La tienda dejó de ser una sección de la landing y ahora es una **vista dedicada** en la ruta `/tienda`. `src/App.tsx` la carga de forma diferida y `src/lib/routes.ts` centraliza la detección de rutas. El header y el footer enlazan a `/tienda`; desde la tienda, los enlaces institucionales vuelven a las secciones del inicio (`/#partidos`, `/#noticias`, etc.).
@@ -101,7 +151,7 @@ La vista principal vive en `src/components/shop/ShopPage.tsx` e incluye:
 
 Los componentes de la tienda están separados en `ProductCard.tsx`, `ProductDetailModal.tsx`, `CartPanel.tsx` y `cart.ts` (cálculos y armado del mensaje). El carrito vive en memoria: se vacía al recargar la página. Los precios y la disponibilidad se actualizan al volver a cargar el sitio.
 
-Para desplegar, el hosting debe reescribir las rutas `/tienda` y `/admin` a `index.html`, igual que cualquier SPA.
+El fallback SPA para `/tienda` ya está configurado en `vercel.json`; los detalles de despliegue y variables de entorno están en [Despliegue en Vercel](#despliegue-en-vercel).
 
 # Panel de administración
 
@@ -204,7 +254,7 @@ src/lib/imageUpload.ts           subida directa a Cloudinary (unsigned)
 
 ### Despliegue de la ruta `/admin`
 
-El panel es una SPA: el hosting debe reescribir `/admin` (y cualquier ruta del cliente) hacia `index.html`. Vite `dev` y `preview` ya lo hacen. En un hosting estático (Netlify, Vercel, Cloudflare Pages) configurá el fallback SPA; en Nginx, `try_files $uri /index.html`.
+El panel es una SPA: `/admin` necesita fallback hacia `index.html`. En Vercel ya está resuelto por `vercel.json` (ver [Despliegue en Vercel](#despliegue-en-vercel)). En otros hostings estáticos (Netlify, Cloudflare Pages) configurá el fallback SPA; en Nginx, `try_files $uri /index.html`.
 
 ## API del panel (Fase 1)
 
@@ -406,7 +456,8 @@ Reglas de validación (`shared/validation.ts` → `optionalUrl`):
 - El upload preset de Cloudinary es *unsigned* y por eso público: restringilo en el dashboard (carpeta, formatos, tamaño) y revisá periódicamente su uso. Para un control más estricto, reemplazá la subida directa por un endpoint propio con firma.
 - El límite de intentos y la revocación de tokens son **en memoria**: alcanzan para una instancia. Con varias instancias hacen falta Redis o una tabla de sesiones en Turso.
 - En producción, serví todo por HTTPS y usá una contraseña larga y única (gestor de contraseñas).
-- Este backend corre dentro del proceso de Vite (`dev`/`preview`). Para un despliegue con otro hosting habrá que extraer los handlers de `server/api.ts` a un adaptador (Node, serverless, etc.); la lógica de auth, validación y repositorios ya está desacoplada.
+- En local el backend corre dentro del proceso de Vite (`dev`/`preview`); en Vercel se ejecuta como Serverless Function a través de `api/index.ts`. Ambos adaptadores comparten `handleApiRequest()` y la misma lógica de auth, validación y repositorios.
+- En Vercel, `ADMIN_PASSWORD`, `SESSION_SECRET`, `DATABASE_URL` y `TURSO_AUTH_TOKEN` se cargan como Environment Variables del proyecto; nunca se exponen al bundle del cliente.
 
 ## Scripts
 
@@ -433,7 +484,10 @@ server/db.ts             cliente Prisma singleton con adapter libSQL (lazy)
 server/errors.ts         ApiError (status + código estable)
 server/auth.ts           login, tokens HMAC, revocación y límite de intentos
 server/repositories.ts   lecturas con fallback + listados y escrituras de administración
-server/api.ts            plugin Vite: rutas públicas, auth y CRUD /api/admin/*
+server/api.ts            router compartido: rutas públicas, auth y CRUD /api/admin/*
+server/env.ts            adapta process.env al tipo Env del runtime serverless
+api/index.ts             Vercel Function que delega en handleApiRequest()
+vercel.json              build, output y rewrites de API + fallback SPA
 src/components/          Header, Footer, secciones de la landing, íconos y UI compartida
 src/components/shop/     ShopPage, ProductCard, ProductDetailModal, CartPanel y lógica del carrito
 src/admin/               panel: login, shell, secciones CRUD y componentes
@@ -446,7 +500,7 @@ src/lib/routes.ts        detección de rutas públicas (`/tienda`, `/admin`) y e
 
 Decisiones clave:
 
-- **Un solo proceso:** la API vive como middleware de Vite, así no hay que levantar ni mantener un backend paralelo.
+- **Un router, dos adaptadores:** la misma API se ejecuta como middleware de Vite en local y como Vercel Function en producción, sin backend paralelo ni lógica duplicada.
 - **El sitio nunca se vacía:** las lecturas públicas son `{ data, source }`; el frontend pinta fixtures mientras llega la respuesta real.
 - **Escrituras honestas:** sin base disponible, el panel recibe un error explícito en vez de un falso éxito.
 - **Prisma 7:** la URL de la base vive en `prisma.config.ts` (no en el schema), y el cliente generado se importa desde `generated/prisma/client`.
