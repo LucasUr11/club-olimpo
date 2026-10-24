@@ -15,11 +15,11 @@ export default function HeroSection() {
       {/* Fondo decorativo */}
       <div className="pattern-stripes absolute inset-0 opacity-60" aria-hidden />
       <div
-        className="absolute -left-40 -top-40 h-[26rem] w-[26rem] rounded-full bg-amarillo/10 blur-3xl"
+        className="absolute -left-40 -top-40 h-104 w-104 rounded-full bg-amarillo/10 blur-3xl"
         aria-hidden
       />
       <div
-        className="absolute -bottom-52 -right-32 h-[30rem] w-[30rem] rounded-full bg-azul-700/40 blur-3xl"
+        className="absolute -bottom-52 -right-32 h-120 w-120 rounded-full bg-azul-700/40 blur-3xl"
         aria-hidden
       />
 

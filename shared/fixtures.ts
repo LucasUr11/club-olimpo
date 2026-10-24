@@ -449,7 +449,7 @@ export const products: Product[] = [
     currency: 'ARS',
     category: 'entrenamiento',
     imageUrl: null,
-    featured: false,
+    featured: true,
   },
   {
     id: 'fx-prod-5',

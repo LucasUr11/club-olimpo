@@ -4,6 +4,7 @@ import Footer from './components/layout/Footer'
 import HeroSection from './components/home/HeroSection'
 import NextMatches from './components/home/NextMatches'
 import NewsCarousel from './components/home/NewsCarousel'
+import FeaturedProducts from './components/home/FeaturedProducts'
 import HistorySection from './components/home/HistorySection'
 import PalmaresSection from './components/home/PalmaresSection'
 import SponsorsSection from './components/home/SponsorsSection'
@@ -30,6 +31,7 @@ function HomePage() {
         <HeroSection />
         <NextMatches />
         <NewsCarousel />
+        <FeaturedProducts />
         <HistorySection />
         <PalmaresSection />
         <SponsorsSection />

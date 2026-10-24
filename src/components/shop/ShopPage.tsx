@@ -47,6 +47,14 @@ export default function ShopPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const productSlug = new URLSearchParams(window.location.search).get('producto')
+    if (!productSlug) return
+
+    const product = products.find((item) => item.slug === productSlug)
+    if (product) setSelectedProduct(product)
+  }, [products])
+
   const categories = useMemo<CategoryOption[]>(() => {
     const byKey = new Map<string, CategoryOption>()
     for (const product of products) {
@@ -121,6 +129,16 @@ export default function ShopPage() {
   function clearCart(): void {
     setCart({})
     setStatusMessage('Carrito vaciado.')
+  }
+
+  function closeProductDetail(): void {
+    setSelectedProduct(null)
+
+    const url = new URL(window.location.href)
+    if (url.searchParams.has('producto')) {
+      url.searchParams.delete('producto')
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
+    }
   }
 
   return (
@@ -315,10 +333,10 @@ export default function ShopPage() {
           key={selectedProduct.id}
           product={selectedProduct}
           isMember={isMember}
-          onClose={() => setSelectedProduct(null)}
+          onClose={closeProductDetail}
           onAdd={(quantity) => {
             addToCart(selectedProduct, quantity)
-            setSelectedProduct(null)
+            closeProductDetail()
           }}
         />
       ) : null}

@@ -44,6 +44,13 @@ export default function Footer() {
             Más que un club: {new Date().getFullYear() - 1911} años de historia azul y amarilla en
             el sur cordobés.
           </p>
+          <a
+            href="/admin"
+            className="mt-3 inline-block text-xs text-white/35 transition hover:text-white/70"
+            target='_blank'
+          >
+            <span>🔒</span> Admin
+          </a>
         </div>
 
         {/* Enlaces */}
