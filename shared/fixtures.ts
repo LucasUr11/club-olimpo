@@ -17,7 +17,7 @@ import type {
   NewsItem,
   Product,
   Sponsor,
-} from './types'
+} from './types.js'
 
 // ───────────────────────────────────────────────────────────────────────────
 // Enlaces externos del sitio — REEMPLAZAR con las URLs reales

@@ -22,7 +22,7 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Connect, Plugin } from 'vite'
-import { ApiError } from './errors'
+import { ApiError } from './errors.js'
 import {
   clearLoginFailures,
   createAdminSession,
@@ -33,7 +33,7 @@ import {
   verifyAdminPassword,
   verifyAdminSession,
   type VerifiedAdminSession,
-} from './auth'
+} from './auth.js'
 import {
   createMatch,
   createNews,
@@ -59,9 +59,9 @@ import {
   updateProduct,
   updateSponsor,
   type RepositoryResult,
-} from './repositories'
-import type { Env } from './db'
-import type { ValidationErrors } from '../shared/validation'
+} from './repositories.js'
+import type { Env } from './db.js'
+import type { ValidationErrors } from '../shared/validation.js'
 import {
   parseMatchCreate,
   parseMatchPatch,
@@ -71,7 +71,7 @@ import {
   parseProductPatch,
   parseSponsorCreate,
   parseSponsorPatch,
-} from '../shared/validation'
+} from '../shared/validation.js'
 
 type ContentHandler = (env: Env) => Promise<RepositoryResult<unknown>>
 

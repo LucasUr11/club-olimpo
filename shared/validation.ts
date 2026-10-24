@@ -23,7 +23,7 @@ import {
   type ProductPatch,
   type SponsorInput,
   type SponsorPatch,
-} from './types'
+} from './types.js'
 
 export type ValidationErrors = Record<string, string>
 

@@ -5,21 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && npm run build:api && vite build",
-    "build:api": "esbuild api/index.ts --bundle --platform=node --format=esm --target=node20 --packages=external --outfile=api/index.js",
+    "build": "vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:schema:sql": "prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script --output prisma/schema.sql",
     "db:seed": "tsx prisma/seed.ts"
-  },
-  "dependencies": {
-    "@prisma/adapter-libsql": "^7.10.1",
-    "@prisma/client": "^7.10.1",
-    "lucide-react": "^1.59.0",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
   },
   "dependencies": {
     "@prisma/adapter-libsql": "^7.10.1",
@@ -35,7 +27,6 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "dotenv": "^18.0.8",
-    "esbuild": "^0.25.0",
     "prisma": "^7.10.1",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",

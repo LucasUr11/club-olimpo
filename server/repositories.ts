@@ -7,7 +7,7 @@
 // El origen real se expone en el header `x-data-source` y en `source`.
 // ============================================================================
 
-import { fixtures } from '../shared/fixtures'
+import { fixtures } from '../shared/fixtures.js'
 import {
   asDiscipline,
   asMatchStatus,
@@ -31,9 +31,9 @@ import {
   type SponsorAdminItem,
   type SponsorInput,
   type SponsorPatch,
-} from '../shared/types'
-import { getPrisma, type Env } from './db'
-import { ApiError } from './errors'
+} from '../shared/types.js'
+import { getPrisma, type Env } from './db.js'
+import { ApiError } from './errors.js'
 
 /** Respuesta estandarizada de la API. */
 export interface RepositoryResult<T> {

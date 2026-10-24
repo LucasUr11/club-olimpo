@@ -16,4 +16,3 @@ export default async function handler(
 ): Promise<void> {
   await handleApiRequest(req, res, envFromProcess())
 }
-export { handleApiRequest };

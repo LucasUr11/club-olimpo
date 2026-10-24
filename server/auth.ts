@@ -16,8 +16,8 @@
 // ============================================================================
 
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
-import type { AdminSession } from '../shared/types'
-import type { Env } from './db'
+import type { AdminSession } from '../shared/types.js'
+import type { Env } from './db.js'
 
 const TOKEN_VERSION = 'v1'
 const DEFAULT_TTL_HOURS = 12
