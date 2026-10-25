@@ -1,5 +1,5 @@
-import { useMemo, type ReactNode } from 'react'
-import { CalendarDays, CalendarX, GraduationCap, MapPin, Newspaper, UserRound } from 'lucide-react'
+import { useCallback, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { ArrowUpRight, CalendarDays, CalendarX, GraduationCap, MapPin, Newspaper, UserRound } from 'lucide-react'
 import { fixtures } from '../../../shared/fixtures'
 import {
   DISCIPLINE_LABELS,
@@ -13,9 +13,11 @@ import { useApi } from '../../hooks/useApi'
 import { formatKickoff, formatShortDate } from '../../lib/format'
 import { cn } from '../../lib/cn'
 import SectionHeading from '../ui/SectionHeading'
+import SportMemberModal from './SportMemberModal'
 
 /** Integrantes, agenda y novedades asociadas a cada disciplina. */
 export default function SportsSection({ discipline }: { discipline: Discipline }) {
+  const [selectedMember, setSelectedMember] = useState<SportMember | null>(null)
   const { data: members } = useApi<SportMember[]>('/api/sport-members', fixtures.sportMembers)
   const fallbackMatches = useMemo(
     () => fixtures.matches.filter((match) => match.discipline === discipline),
@@ -41,6 +43,7 @@ export default function SportsSection({ discipline }: { discipline: Discipline }
   const sportNews = news
     .filter((item) => item.discipline === null || item.discipline === discipline)
     .slice(0, 3)
+  const closeMemberModal = useCallback(() => setSelectedMember(null), [])
 
   return (
     <section className="bg-hueso py-12 md:py-16">
@@ -59,7 +62,7 @@ export default function SportsSection({ discipline }: { discipline: Discipline }
               </span>
               <div>
                 <h3 id="integrantes-titulo" className="font-display text-2xl font-bold uppercase text-azul">
-                  Profesores y alumnos
+                  Profesores y jugadores
                 </h3>
                 <p className="text-sm text-slate-500">{DISCIPLINE_LABELS[discipline]}</p>
               </div>
@@ -68,7 +71,7 @@ export default function SportsSection({ discipline }: { discipline: Discipline }
             {sportMembers.length > 0 ? (
               <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {sportMembers.map((member) => (
-                  <MemberCard key={member.id} member={member} />
+                  <MemberCard key={member.id} member={member} onSelect={setSelectedMember} />
                 ))}
               </div>
             ) : (
@@ -120,6 +123,9 @@ export default function SportsSection({ discipline }: { discipline: Discipline }
           </div>
         </div>
       </div>
+      {selectedMember ? (
+        <SportMemberModal member={selectedMember} onClose={closeMemberModal} />
+      ) : null}
     </section>
   )
 }
@@ -133,14 +139,33 @@ function PanelHeading({ icon, title, id }: { icon: ReactNode; title: string; id:
   )
 }
 
-function MemberCard({ member }: { member: SportMember }) {
+function MemberCard({
+  member,
+  onSelect,
+}: {
+  member: SportMember
+  onSelect: (member: SportMember) => void
+}) {
   const isProfessor = member.role === 'PROFESSOR'
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-amarillo hover:shadow-lg hover:shadow-azul/10">
+    <article
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(member)}
+      onKeyDown={(event: KeyboardEvent<HTMLElement>) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(member)
+        }
+      }}
+      aria-haspopup="dialog"
+      aria-label={`Ver detalles de ${member.name}`}
+      className="group w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:border-amarillo hover:shadow-lg hover:shadow-azul/10 focus-visible:outline-azul"
+    >
       <div className="relative aspect-4/3 overflow-hidden bg-azul/5">
         {member.imageUrl ? (
-          <img src={member.imageUrl} alt={member.name} loading="lazy" className="h-full w-full object-cover" />
+          <img src={member.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
         ) : (
           <div className="grid h-full w-full place-items-center text-azul/30" aria-hidden>
             <UserRound className="h-16 w-16" />
@@ -152,12 +177,16 @@ function MemberCard({ member }: { member: SportMember }) {
             isProfessor ? 'bg-amarillo text-azul' : 'bg-azul text-white',
           )}
         >
-          {isProfessor ? 'Profesor/a' : 'Alumno/a'}
+          {isProfessor ? 'Profesor/a' : 'Jugador/a'}
         </span>
       </div>
       <div className="p-4">
         <h4 className="font-display text-xl font-bold uppercase leading-tight text-azul">{member.name}</h4>
         {member.details ? <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-500">{member.details}</p> : null}
+        <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-azul transition group-hover:text-azul-700">
+          Ver perfil
+          <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+        </span>
       </div>
     </article>
   )
