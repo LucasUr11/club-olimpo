@@ -150,6 +150,8 @@ export interface Product {
   category: string
   /** URL de la imagen (almacenamiento en la nube o ruta local). */
   imageUrl: string | null
+  /** URLs de la galería en orden; la primera es la imagen principal. */
+  imageUrls: string[]
   featured: boolean
 }
 
@@ -165,8 +167,8 @@ export type ApiSource = 'db' | 'fixtures'
 // Payloads de escritura del panel de administración
 // ----------------------------------------------------------------------------
 // Las URLs de imagen son strings: el proveedor de almacenamiento en la nube
-// sube el archivo y entrega la URL final; la API solo valida y persiste el
-// string (no recibe archivos binarios).
+// sube los archivos y entrega las URLs finales; la API solo valida y persiste
+// esas URLs (no recibe archivos binarios).
 // ───────────────────────────────────────────────────────────────────────────
 
 export interface MatchInput {
@@ -216,6 +218,7 @@ export interface ProductInput {
   currency: string
   category: string
   imageUrl: string | null
+  imageUrls: string[]
   featured: boolean
   available: boolean
 }

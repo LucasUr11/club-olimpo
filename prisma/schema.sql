@@ -89,6 +89,7 @@ CREATE TABLE "Product" (
     "currency" TEXT NOT NULL DEFAULT 'ARS',
     "category" TEXT NOT NULL,
     "imageUrl" TEXT,
+    "imageUrls" TEXT NOT NULL DEFAULT '[]',
     "featured" BOOLEAN NOT NULL DEFAULT false,
     "available" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

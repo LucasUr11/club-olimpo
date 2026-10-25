@@ -117,6 +117,25 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
 Cuando la base esté configurada y tenga filas, la API sirve datos reales (`x-data-source: db`). Si la query falla (p. ej. token inválido), vuelve a fixtures en lugar de romper el sitio.
 
+### Galería de imágenes de productos
+
+Los productos admiten hasta 10 imágenes. En el panel `/admin`, se pueden subir
+varias imágenes en conjunto o agregar sus URLs; la primera imagen de la lista
+es la principal y las restantes se muestran como miniaturas en el detalle del
+producto. La base almacena la lista como JSON en `Product.imageUrls`, compatible
+con SQLite, y conserva `imageUrl` como imagen principal para usos existentes.
+
+En una base Turso ya creada, aplicá una sola vez la migración aditiva:
+
+```bash
+turso db shell olimpo < prisma/migrate-product-images.sql
+npm run db:generate
+```
+
+No hace falta aplicarla en una base nueva generada desde `prisma/schema.sql`.
+Las imágenes existentes en `imageUrl` se siguen mostrando aunque no se hayan
+editado desde el formulario.
+
 ## Despliegue en Vercel
 
 El proyecto incluye la configuración necesaria para desplegar el frontend y la API juntos en Vercel:

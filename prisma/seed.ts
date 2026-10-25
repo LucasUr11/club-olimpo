@@ -65,7 +65,12 @@ async function main(): Promise<void> {
 
     // 7) Tienda ------------------------------------------------------------
     await prisma.product.deleteMany()
-    await prisma.product.createMany({ data: fixtures.products })
+    await prisma.product.createMany({
+      data: fixtures.products.map(({ imageUrls, ...product }) => ({
+        ...product,
+        imageUrls: JSON.stringify(imageUrls),
+      })),
+    })
 
     console.log('✔ Base de datos poblada con los fixtures:')
     console.log(`   • Partidos:      ${fixtures.matches.length}`)

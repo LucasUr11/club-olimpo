@@ -149,6 +149,8 @@ model Product {
   currency  String  @default("ARS")
   category  String
   imageUrl  String?
+  /// URLs de imágenes adicionales, serializadas como JSON para SQLite.
+  imageUrls String  @default("[]")
   featured  Boolean @default(false)
   available Boolean @default(true)
 

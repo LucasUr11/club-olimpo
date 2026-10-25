@@ -419,6 +419,7 @@ export const products: Product[] = [
     currency: 'ARS',
     category: 'camisetas',
     imageUrl: '/fotos-olimpo/Camiseta-Primera-2026-1.png',
+    imageUrls: ['/fotos-olimpo/Camiseta-Primera-2026-1.png', '/fotos-olimpo/Camiseta-Primera-2026-2.png'],
     featured: true,
   },
   {
@@ -431,6 +432,7 @@ export const products: Product[] = [
     currency: 'ARS',
     category: 'camisetas',
     imageUrl: null,
+    imageUrls: [],
     featured: true,
   },
   {
@@ -443,6 +445,7 @@ export const products: Product[] = [
     currency: 'ARS',
     category: 'accesorios',
     imageUrl: null,
+    imageUrls: [],
     featured: true,
   },
   {
@@ -455,6 +458,7 @@ export const products: Product[] = [
     currency: 'ARS',
     category: 'entrenamiento',
     imageUrl: null,
+    imageUrls: [],
     featured: true,
   },
   {
@@ -467,6 +471,7 @@ export const products: Product[] = [
     currency: 'ARS',
     category: 'entrenamiento',
     imageUrl: '/fotos-olimpo/Short-2026.png',
+    imageUrls: ['/fotos-olimpo/Short-2026.png'],
     featured: false,
   },
 ]

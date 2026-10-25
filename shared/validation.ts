@@ -230,9 +230,7 @@ const MAX_URL_LENGTH = 2048
  * o ruta local que empiece con "/". Rechaza esquemas peligrosos como
  * `javascript:` o `data:`.
  */
-function optionalUrl(ctx: Context, key: string, label: string): string | null {
-  if (!has(ctx, key)) return null
-  const raw = ctx.body[key]
+function parseUrl(ctx: Context, raw: unknown, key: string, label: string): string | null {
   if (raw === null || raw === undefined) return null
   if (typeof raw !== 'string') {
     addError(ctx, key, `${label} debe ser una URL de texto.`)
@@ -257,6 +255,30 @@ function optionalUrl(ctx: Context, key: string, label: string): string | null {
     addError(ctx, key, `${label} debe ser una URL http(s) válida o una ruta local que empiece con "/".`)
     return null
   }
+}
+
+function optionalUrl(ctx: Context, key: string, label: string): string | null {
+  if (!has(ctx, key)) return null
+  return parseUrl(ctx, ctx.body[key], key, label)
+}
+
+const MAX_PRODUCT_IMAGES = 10
+
+function optionalUrlArray(ctx: Context, key: string, label: string): string[] {
+  if (!has(ctx, key)) return []
+  const raw = ctx.body[key]
+  if (!Array.isArray(raw)) {
+    addError(ctx, key, `${label} debe ser una lista de URLs.`)
+    return []
+  }
+  if (raw.length > MAX_PRODUCT_IMAGES) {
+    addError(ctx, key, `${label} no puede tener más de ${MAX_PRODUCT_IMAGES} imágenes.`)
+  }
+
+  const urls = raw.slice(0, MAX_PRODUCT_IMAGES).map((value, index) =>
+    parseUrl(ctx, value, key, `${label} (${index + 1})`),
+  )
+  return [...new Set(urls.filter((url): url is string => url !== null))]
 }
 
 const CURRENCY_PATTERN = /^[A-Z]{3}$/
@@ -466,6 +488,10 @@ export function parseProductCreate(input: unknown): ValidationResult<ProductInpu
     0,
   )
   validateProductPrices(ctx, memberPrice, nonMemberPrice)
+  const imageUrls = optionalUrlArray(ctx, 'imageUrls', 'Las imágenes')
+  const imageUrl = has(ctx, 'imageUrls')
+    ? imageUrls[0] ?? null
+    : optionalUrl(ctx, 'imageUrl', 'La imagen')
 
   const value: ProductInput = {
     name: requiredString(ctx, 'name', 'El nombre', 120) ?? '',
@@ -475,7 +501,8 @@ export function parseProductCreate(input: unknown): ValidationResult<ProductInpu
     nonMemberPrice,
     currency: requiredCurrency(ctx),
     category: requiredString(ctx, 'category', 'La categoría', 60) ?? '',
-    imageUrl: optionalUrl(ctx, 'imageUrl', 'La imagen'),
+    imageUrl,
+    imageUrls: has(ctx, 'imageUrls') ? imageUrls : imageUrl ? [imageUrl] : [],
     featured: booleanOrDefault(ctx, 'featured', 'El destacado', false),
     available: booleanOrDefault(ctx, 'available', 'La disponibilidad', true),
   }
@@ -516,7 +543,15 @@ export function parseProductPatch(input: unknown): ValidationResult<ProductPatch
     const category = requiredString(ctx, 'category', 'La categoría', 60)
     if (category !== undefined) patch.category = category
   }
-  if (has(ctx, 'imageUrl')) patch.imageUrl = optionalUrl(ctx, 'imageUrl', 'La imagen')
+  if (has(ctx, 'imageUrls')) {
+    const imageUrls = optionalUrlArray(ctx, 'imageUrls', 'Las imágenes')
+    patch.imageUrls = imageUrls
+    patch.imageUrl = imageUrls[0] ?? null
+  } else if (has(ctx, 'imageUrl')) {
+    const imageUrl = optionalUrl(ctx, 'imageUrl', 'La imagen')
+    patch.imageUrl = imageUrl
+    patch.imageUrls = imageUrl ? [imageUrl] : []
+  }
   if (has(ctx, 'featured')) {
     const featured = optionalBoolean(ctx, 'featured', 'El destacado')
     if (featured !== undefined) patch.featured = featured

@@ -14,7 +14,7 @@ import { useAdminResource } from '../useAdminResource'
 import { useFeedback } from '../feedback'
 import AdminModal from '../components/AdminModal'
 import ConfirmDialog from '../components/ConfirmDialog'
-import ImageField from '../components/ImageField'
+import ImageGalleryField from '../components/ImageGalleryField'
 import ImagePreview from '../components/ImagePreview'
 import SectionHeader from '../components/SectionHeader'
 import { EmptyState, ListError, ListSkeleton } from '../components/ListStates'
@@ -29,7 +29,7 @@ interface ProductFormState {
   nonMemberPrice: string
   currency: string
   category: string
-  imageUrl: string | null
+  imageUrls: string[]
   featured: boolean
   available: boolean
 }
@@ -42,7 +42,7 @@ const EMPTY_FORM: ProductFormState = {
   nonMemberPrice: '',
   currency: 'ARS',
   category: '',
-  imageUrl: null,
+  imageUrls: [],
   featured: false,
   available: true,
 }
@@ -58,7 +58,7 @@ function productToForm(product: ProductAdminItem): ProductFormState {
     nonMemberPrice: String(product.nonMemberPrice),
     currency: product.currency,
     category: product.category,
-    imageUrl: product.imageUrl,
+    imageUrls: product.imageUrls.length > 0 ? product.imageUrls : product.imageUrl ? [product.imageUrl] : [],
     featured: product.featured,
     available: product.available,
   }
@@ -73,7 +73,8 @@ function buildPayload(form: ProductFormState) {
     nonMemberPrice: form.nonMemberPrice.trim() === '' ? Number.NaN : Number(form.nonMemberPrice),
     currency: form.currency,
     category: form.category,
-    imageUrl: form.imageUrl,
+    imageUrl: form.imageUrls[0] ?? null,
+    imageUrls: form.imageUrls,
     featured: form.featured,
     available: form.available,
   }
@@ -349,7 +350,7 @@ function ProductFormModal({
     <AdminModal
       open
       title={item ? 'Editar producto' : 'Nuevo producto'}
-      description="La imagen y la descripción se publican en la página Tienda del sitio."
+      description="La galería y la descripción se publican en la página Tienda del sitio."
       onClose={onClose}
       closeDisabled={saving}
     >
@@ -485,11 +486,10 @@ function ProductFormModal({
           error={fieldErrors['description']}
         />
 
-        <ImageField
-          label="Imagen del producto"
-          value={form.imageUrl}
-          onChange={(value) => update('imageUrl', value)}
-          error={fieldErrors['imageUrl']}
+        <ImageGalleryField
+          values={form.imageUrls}
+          onChange={(values) => update('imageUrls', values)}
+          error={fieldErrors['imageUrls']}
         />
 
         <div className="grid gap-3 sm:grid-cols-2">

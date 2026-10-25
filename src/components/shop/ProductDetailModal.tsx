@@ -20,6 +20,7 @@ export default function ProductDetailModal({
   onAdd,
 }: ProductDetailModalProps) {
   const [quantity, setQuantity] = useState(1)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const onCloseRef = useRef(onClose)
@@ -67,6 +68,13 @@ export default function ProductDetailModal({
 
   const price = unitPrice(product, isMember)
   const total = price * quantity
+  const images =
+    product.imageUrls.length > 0
+      ? product.imageUrls
+      : product.imageUrl
+        ? [product.imageUrl]
+        : []
+  const activeImage = images[Math.min(activeImageIndex, images.length - 1)]
 
   return (
     <div
@@ -100,17 +108,41 @@ export default function ProductDetailModal({
 
           <div className="grid md:grid-cols-2">
             {/* Imagen grande */}
-            <div className="relative flex min-h-[300px] items-center justify-center overflow-hidden bg-linear-to-br from-slate-50 via-white to-amarillo/10 p-6 sm:min-h-[420px] md:min-h-[560px]">
+            <div className="relative flex min-h-[300px] flex-col overflow-hidden bg-linear-to-br from-slate-50 via-white to-amarillo/10 p-6 sm:min-h-[420px] md:min-h-[560px]">
               <span className="pattern-stripes-dark absolute inset-0 opacity-60" aria-hidden />
-              {product.imageUrl ? (
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="relative max-h-[320px] w-full object-contain sm:max-h-[440px] md:max-h-[500px]"
-                />
-              ) : (
-                <Shirt className="relative h-32 w-32 text-azul/20" aria-hidden />
-              )}
+              <div className="relative flex flex-1 items-center justify-center py-8">
+                {activeImage ? (
+                  <img
+                    src={activeImage}
+                    alt={`${product.name} — imagen ${activeImageIndex + 1}`}
+                    className="max-h-[320px] w-full object-contain sm:max-h-[440px] md:max-h-[500px]"
+                  />
+                ) : (
+                  <Shirt className="h-32 w-32 text-azul/20" aria-hidden />
+                )}
+              </div>
+
+              {images.length > 1 ? (
+                <div className="relative mt-2 flex justify-center gap-2 overflow-x-auto pb-1">
+                  {images.map((image, index) => (
+                    <button
+                      key={`${image}-${index}`}
+                      type="button"
+                      onClick={() => setActiveImageIndex(index)}
+                      aria-label={`Ver imagen ${index + 1} de ${product.name}`}
+                      aria-pressed={activeImageIndex === index}
+                      className={cn(
+                        'h-14 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 bg-white p-1 transition sm:h-16 sm:w-16',
+                        activeImageIndex === index
+                          ? 'border-azul ring-2 ring-amarillo'
+                          : 'border-white/70 hover:border-azul/40',
+                      )}
+                    >
+                      <img src={image} alt="" className="h-full w-full object-contain" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
               <div className="absolute left-4 top-4 flex flex-col items-start gap-2">
                 <span className="rounded-full bg-azul px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">

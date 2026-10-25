@@ -174,7 +174,7 @@ function MemberCard({ member }: { member: SportMember }) {
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-amarillo hover:shadow-lg hover:shadow-azul/10">
-      <div className="relative aspect-[4/3] overflow-hidden bg-azul/5">
+      <div className="relative aspect-4/3 overflow-hidden bg-azul/5">
         {member.imageUrl ? (
           <img src={member.imageUrl} alt={member.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (

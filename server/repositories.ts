@@ -131,6 +131,7 @@ interface ProductRow {
   currency: string
   category: string
   imageUrl: string | null
+  imageUrls: string
   featured: boolean
   available: boolean
 }
@@ -205,18 +206,34 @@ const mapHistory = (row: HistoryRow): HistoryMilestone => ({
   description: row.description,
 })
 
-const mapProduct = (row: ProductRow): Product => ({
-  id: row.id,
-  name: row.name,
-  slug: row.slug,
-  description: row.description,
-  memberPrice: row.memberPrice,
-  nonMemberPrice: row.nonMemberPrice,
-  currency: row.currency,
-  category: row.category,
-  imageUrl: row.imageUrl,
-  featured: row.featured,
-})
+function productImages(row: ProductRow): string[] {
+  const parsed: unknown = JSON.parse(row.imageUrls)
+  if (!Array.isArray(parsed)) {
+    throw new Error(`Las imágenes del producto "${row.id}" no tienen un formato válido.`)
+  }
+  const imageUrls = parsed.filter((url): url is string => typeof url === 'string')
+  if (imageUrls.length !== parsed.length) {
+    throw new Error(`Las imágenes del producto "${row.id}" no tienen un formato válido.`)
+  }
+  return imageUrls.length > 0 ? imageUrls : row.imageUrl ? [row.imageUrl] : []
+}
+
+const mapProduct = (row: ProductRow): Product => {
+  const imageUrls = productImages(row)
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    memberPrice: row.memberPrice,
+    nonMemberPrice: row.nonMemberPrice,
+    currency: row.currency,
+    category: row.category,
+    imageUrl: imageUrls[0] ?? row.imageUrl,
+    imageUrls,
+    featured: row.featured,
+  }
+}
 
 const mapProductAdmin = (row: ProductRow): ProductAdminItem => ({
   ...mapProduct(row),
@@ -805,6 +822,7 @@ export async function createProduct(env: Env, input: ProductInput): Promise<Prod
           currency: input.currency,
           category: input.category,
           imageUrl: input.imageUrl,
+          imageUrls: JSON.stringify(input.imageUrls),
           featured: input.featured,
           available: input.available,
         },
@@ -828,6 +846,7 @@ export async function updateProduct(env: Env, id: string, patch: ProductPatch): 
       currency?: string
       category?: string
       imageUrl?: string | null
+      imageUrls?: string
       featured?: boolean
       available?: boolean
     } = {}
@@ -840,6 +859,7 @@ export async function updateProduct(env: Env, id: string, patch: ProductPatch): 
     if (patch.currency !== undefined) data.currency = patch.currency
     if (patch.category !== undefined) data.category = patch.category
     if (patch.imageUrl !== undefined) data.imageUrl = patch.imageUrl
+    if (patch.imageUrls !== undefined) data.imageUrls = JSON.stringify(patch.imageUrls)
     if (patch.featured !== undefined) data.featured = patch.featured
     if (patch.available !== undefined) data.available = patch.available
 
