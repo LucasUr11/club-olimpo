@@ -57,6 +57,8 @@ model News {
   body      String?
   /// primera | inferiores | obras | institucional
   category  String
+  /// Disciplina asociada; null para noticias generales del club.
+  discipline String?
   coverUrl  String?
   published Boolean  @default(true)
   publishedAt DateTime @default(now())
@@ -66,6 +68,7 @@ model News {
 
   @@index([published, publishedAt])
   @@index([category])
+  @@index([discipline, published, publishedAt])
 }
 
 /// Palmarés: títulos y logros por disciplina.
@@ -114,6 +117,23 @@ model HistoryMilestone {
   updatedAt DateTime @updatedAt
 
   @@index([year])
+}
+
+/// Profesores y alumnos de las disciplinas deportivas.
+model SportMember {
+  id       String  @id @default(cuid())
+  name     String
+  /// PROFESSOR | STUDENT (SQLite no admite enums de Prisma).
+  role     String
+  /// Clave de disciplina: futbol | futbol-femenino | basquet | voley | hockey
+  sport    String
+  imageUrl String?
+  details  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sport, role])
 }
 
 /// Productos de la tienda oficial (Shop).

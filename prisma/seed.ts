@@ -39,31 +39,38 @@ async function main(): Promise<void> {
       })),
     })
 
-    // 3) Palmarés -----------------------------------------------------------
+    // 3) Integrantes de disciplinas --------------------------------------
+    await prisma.sportMember.deleteMany()
+    if (fixtures.sportMembers.length > 0) {
+      await prisma.sportMember.createMany({ data: fixtures.sportMembers })
+    }
+
+    // 4) Palmarés -----------------------------------------------------------
     await prisma.achievement.deleteMany()
     await prisma.achievement.createMany({
       data: fixtures.achievements.map((item, index) => ({ ...item, order: index })),
     })
 
-    // 4) Sponsors -----------------------------------------------------------
+    // 5) Sponsors -----------------------------------------------------------
     await prisma.sponsor.deleteMany()
     await prisma.sponsor.createMany({
       data: fixtures.sponsors.map((item, index) => ({ ...item, order: index })),
     })
 
-    // 5) Historia -----------------------------------------------------------
+    // 6) Historia -----------------------------------------------------------
     await prisma.historyMilestone.deleteMany()
     await prisma.historyMilestone.createMany({
       data: fixtures.history.map((item, index) => ({ ...item, order: index })),
     })
 
-    // 6) Tienda ------------------------------------------------------------
+    // 7) Tienda ------------------------------------------------------------
     await prisma.product.deleteMany()
     await prisma.product.createMany({ data: fixtures.products })
 
     console.log('✔ Base de datos poblada con los fixtures:')
     console.log(`   • Partidos:      ${fixtures.matches.length}`)
     console.log(`   • Noticias:      ${fixtures.news.length}`)
+    console.log(`   • Integrantes:   ${fixtures.sportMembers.length}`)
     console.log(`   • Logros:        ${fixtures.achievements.length}`)
     console.log(`   • Sponsors:      ${fixtures.sponsors.length}`)
     console.log(`   • Hitos:         ${fixtures.history.length}`)

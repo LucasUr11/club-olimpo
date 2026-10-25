@@ -5,8 +5,11 @@
 import { useState, type FormEvent } from 'react'
 import { Newspaper, Pencil, Sparkles, Trash2 } from 'lucide-react'
 import {
+  DISCIPLINES,
+  DISCIPLINE_LABELS,
   NEWS_CATEGORIES,
   NEWS_CATEGORY_LABELS,
+  type Discipline,
   type NewsAdminItem,
   type NewsCategory,
 } from '../../../shared/types'
@@ -32,6 +35,7 @@ interface NewsFormState {
   excerpt: string
   body: string
   category: NewsCategory
+  discipline: Discipline | null
   coverUrl: string | null
   published: boolean
   publishedAt: string
@@ -44,6 +48,7 @@ function emptyForm(): NewsFormState {
     excerpt: '',
     body: '',
     category: 'institucional',
+    discipline: null,
     coverUrl: null,
     published: true,
     publishedAt: toDateTimeLocal(new Date().toISOString()),
@@ -57,6 +62,7 @@ function newsToForm(item: NewsAdminItem): NewsFormState {
     excerpt: item.excerpt,
     body: item.body ?? '',
     category: item.category,
+    discipline: item.discipline,
     coverUrl: item.coverUrl,
     published: item.published,
     publishedAt: toDateTimeLocal(item.publishedAt),
@@ -70,6 +76,7 @@ function buildPayload(form: NewsFormState) {
     excerpt: form.excerpt,
     body: form.body.trim() === '' ? null : form.body,
     category: form.category,
+    discipline: form.discipline,
     coverUrl: form.coverUrl,
     published: form.published,
     publishedAt: fromDateTimeLocal(form.publishedAt),
@@ -364,6 +371,23 @@ function NewsFormModal({
             {NEWS_CATEGORIES.map((category) => (
               <option key={category} value={category}>
                 {NEWS_CATEGORY_LABELS[category]}
+              </option>
+            ))}
+          </SelectField>
+
+          <SelectField
+            label="Disciplina asociada"
+            value={form.discipline ?? ''}
+            onChange={(event) =>
+              update('discipline', event.target.value === '' ? null : (event.target.value as Discipline))
+            }
+            error={fieldErrors['discipline']}
+            hint="Dejala sin disciplina para mostrarla como novedad general."
+          >
+            <option value="">General del club</option>
+            {DISCIPLINES.map((discipline) => (
+              <option key={discipline} value={discipline}>
+                {DISCIPLINE_LABELS[discipline]}
               </option>
             ))}
           </SelectField>

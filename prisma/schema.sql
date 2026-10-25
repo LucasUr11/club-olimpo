@@ -23,6 +23,7 @@ CREATE TABLE "News" (
     "excerpt" TEXT NOT NULL,
     "body" TEXT,
     "category" TEXT NOT NULL,
+    "discipline" TEXT,
     "coverUrl" TEXT,
     "published" BOOLEAN NOT NULL DEFAULT true,
     "publishedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -66,6 +67,18 @@ CREATE TABLE "HistoryMilestone" (
 );
 
 -- CreateTable
+CREATE TABLE "SportMember" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "role" TEXT NOT NULL,
+    "sport" TEXT NOT NULL,
+    "imageUrl" TEXT,
+    "details" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -98,6 +111,9 @@ CREATE INDEX "News_published_publishedAt_idx" ON "News"("published", "publishedA
 CREATE INDEX "News_category_idx" ON "News"("category");
 
 -- CreateIndex
+CREATE INDEX "News_discipline_published_publishedAt_idx" ON "News"("discipline", "published", "publishedAt");
+
+-- CreateIndex
 CREATE INDEX "Achievement_discipline_order_idx" ON "Achievement"("discipline", "order");
 
 -- CreateIndex
@@ -105,6 +121,9 @@ CREATE INDEX "Sponsor_tier_order_idx" ON "Sponsor"("tier", "order");
 
 -- CreateIndex
 CREATE INDEX "HistoryMilestone_year_idx" ON "HistoryMilestone"("year");
+
+-- CreateIndex
+CREATE INDEX "SportMember_sport_role_idx" ON "SportMember"("sport", "role");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Product_slug_key" ON "Product"("slug");

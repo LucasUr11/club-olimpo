@@ -13,6 +13,7 @@ import {
   asMatchStatus,
   asNewsCategory,
   asSponsorTier,
+  asSportMemberRole,
   type Achievement,
   type ApiSource,
   type HistoryMilestone,
@@ -31,6 +32,9 @@ import {
   type SponsorAdminItem,
   type SponsorInput,
   type SponsorPatch,
+  type SportMember,
+  type SportMemberInput,
+  type SportMemberPatch,
 } from '../shared/types.js'
 import { getPrisma, type Env } from './db.js'
 import { ApiError } from './errors.js'
@@ -87,6 +91,7 @@ interface NewsRow {
   excerpt: string
   body: string | null
   category: string
+  discipline: string | null
   coverUrl: string | null
   published: boolean
   publishedAt: Date
@@ -130,6 +135,15 @@ interface ProductRow {
   available: boolean
 }
 
+interface SportMemberRow {
+  id: string
+  name: string
+  role: string
+  sport: string
+  imageUrl: string | null
+  details: string | null
+}
+
 // ── Mappers BD → DTO ───────────────────────────────────────────────────────
 
 const mapMatch = (row: MatchRow): Match => ({
@@ -152,6 +166,7 @@ const mapNews = (row: NewsRow): NewsItem => ({
   slug: row.slug,
   excerpt: row.excerpt,
   category: asNewsCategory(row.category),
+  discipline: row.discipline === null ? null : asDiscipline(row.discipline),
   publishedAt: row.publishedAt.toISOString(),
   coverUrl: row.coverUrl,
 })
@@ -208,45 +223,89 @@ const mapProductAdmin = (row: ProductRow): ProductAdminItem => ({
   available: row.available,
 })
 
+const mapSportMember = (row: SportMemberRow): SportMember => ({
+  id: row.id,
+  name: row.name,
+  role: asSportMemberRole(row.role),
+  sport: asDiscipline(row.sport),
+  imageUrl: row.imageUrl,
+  details: row.details,
+})
+
 // ── Endpoints de lectura ───────────────────────────────────────────────────
 
 /** Próximos partidos del club (todas las disciplinas). */
-export async function getMatches(env: Env): Promise<RepositoryResult<Match[]>> {
+export async function getMatches(
+  env: Env,
+  discipline?: Match['discipline'],
+): Promise<RepositoryResult<Match[]>> {
+  const fallback = discipline
+    ? fixtures.matches.filter((match) => match.discipline === discipline)
+    : fixtures.matches
   try {
     const prisma = await getPrisma(env)
-    if (!prisma) return fromFixtures(fixtures.matches)
+    if (!prisma) return fromFixtures(fallback)
 
     const rows = await withTimeout(
       prisma.match.findMany({
-        where: { status: 'scheduled', kickoff: { gte: new Date() } },
+        where: {
+          status: 'scheduled',
+          kickoff: { gte: new Date() },
+          ...(discipline ? { discipline } : {}),
+        },
         orderBy: { kickoff: 'asc' },
         take: 10,
       }),
     )
-    if (rows.length === 0) return fromFixtures(fixtures.matches)
+    if (rows.length === 0) return fromFixtures(fallback)
     return { data: rows.map(mapMatch), source: 'db' }
   } catch {
-    return fromFixtures(fixtures.matches)
+    return fromFixtures(fallback)
   }
 }
 
 /** Últimas noticias y novedades (ordenadas por fecha de publicación). */
-export async function getNews(env: Env): Promise<RepositoryResult<NewsItem[]>> {
+export async function getNews(
+  env: Env,
+  discipline?: NewsItem['discipline'],
+): Promise<RepositoryResult<NewsItem[]>> {
+  const fallback = discipline
+    ? fixtures.news.filter((item) => item.discipline === null || item.discipline === discipline)
+    : fixtures.news
   try {
     const prisma = await getPrisma(env)
-    if (!prisma) return fromFixtures(fixtures.news)
+    if (!prisma) return fromFixtures(fallback)
 
     const rows = await withTimeout(
       prisma.news.findMany({
-        where: { published: true },
+        where: {
+          published: true,
+          ...(discipline ? { OR: [{ discipline }, { discipline: null }] } : {}),
+        },
         orderBy: { publishedAt: 'desc' },
         take: 8,
       }),
     )
-    if (rows.length === 0) return fromFixtures(fixtures.news)
+    if (rows.length === 0) return fromFixtures(fallback)
     return { data: rows.map(mapNews), source: 'db' }
   } catch {
-    return fromFixtures(fixtures.news)
+    return fromFixtures(fallback)
+  }
+}
+
+/** Profesores y alumnos para la sección pública de disciplinas. */
+export async function getSportMembers(env: Env): Promise<RepositoryResult<SportMember[]>> {
+  try {
+    const prisma = await getPrisma(env)
+    if (!prisma) return fromFixtures(fixtures.sportMembers)
+
+    const rows = await withTimeout(
+      prisma.sportMember.findMany({ orderBy: [{ sport: 'asc' }, { role: 'asc' }, { name: 'asc' }] }),
+    )
+    if (rows.length === 0) return fromFixtures(fixtures.sportMembers)
+    return { data: rows.map(mapSportMember), source: 'db' }
+  } catch {
+    return fromFixtures(fixtures.sportMembers)
   }
 }
 
@@ -420,13 +479,35 @@ export async function listAdminMatches(env: Env): Promise<RepositoryResult<Match
 }
 
 export async function listAdminNews(env: Env): Promise<RepositoryResult<NewsAdminItem[]>> {
-  const prisma = await requirePrisma(env)
+  const fallback = fixtures.news.map((item) => ({ ...item, body: null, published: true }))
+  let rows: NewsRow[]
   try {
-    const rows = await withTimeout(prisma.news.findMany({ orderBy: { publishedAt: 'desc' } }))
-    return { data: rows.map(mapNewsAdmin), source: 'db' }
-  } catch (error) {
-    return dbFailure(error)
+    const prisma = await getPrisma(env)
+    if (!prisma) return fromFixtures(fallback)
+
+    rows = await withTimeout(prisma.news.findMany({ orderBy: { publishedAt: 'desc' } }))
+  } catch {
+    return fromFixtures(fallback)
   }
+
+  return { data: rows.map(mapNewsAdmin), source: 'db' }
+}
+
+export async function listAdminSportMembers(env: Env): Promise<RepositoryResult<SportMember[]>> {
+  const fallback = fixtures.sportMembers
+  let rows: SportMemberRow[]
+  try {
+    const prisma = await getPrisma(env)
+    if (!prisma) return fromFixtures(fallback)
+
+    rows = await withTimeout(
+      prisma.sportMember.findMany({ orderBy: [{ sport: 'asc' }, { role: 'asc' }, { name: 'asc' }] }),
+    )
+  } catch {
+    return fromFixtures(fallback)
+  }
+
+  return { data: rows.map(mapSportMember), source: 'db' }
 }
 
 export async function listAdminSponsors(env: Env): Promise<RepositoryResult<SponsorAdminItem[]>> {
@@ -537,6 +618,7 @@ export async function createNews(env: Env, input: NewsInput): Promise<NewsAdminI
           excerpt: input.excerpt,
           body: input.body,
           category: input.category,
+          discipline: input.discipline,
           coverUrl: input.coverUrl,
           published: input.published,
           ...(input.publishedAt ? { publishedAt: new Date(input.publishedAt) } : {}),
@@ -558,6 +640,7 @@ export async function updateNews(env: Env, id: string, patch: NewsPatch): Promis
       excerpt?: string
       body?: string | null
       category?: string
+      discipline?: string | null
       coverUrl?: string | null
       published?: boolean
       publishedAt?: Date
@@ -568,6 +651,7 @@ export async function updateNews(env: Env, id: string, patch: NewsPatch): Promis
     if (patch.excerpt !== undefined) data.excerpt = patch.excerpt
     if (patch.body !== undefined) data.body = patch.body
     if (patch.category !== undefined) data.category = patch.category
+    if (patch.discipline !== undefined) data.discipline = patch.discipline
     if (patch.coverUrl !== undefined) data.coverUrl = patch.coverUrl
     if (patch.published !== undefined) data.published = patch.published
     if (patch.publishedAt) data.publishedAt = new Date(patch.publishedAt)
@@ -583,6 +667,66 @@ export async function deleteNews(env: Env, id: string): Promise<{ id: string }> 
   const prisma = await requirePrisma(env)
   try {
     await withTimeout(prisma.news.delete({ where: { id } }))
+    return { id }
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+// ── Integrantes de disciplinas ────────────────────────────────────────────
+
+export async function createSportMember(env: Env, input: SportMemberInput): Promise<SportMember> {
+  const prisma = await requirePrisma(env)
+  try {
+    const row = await withTimeout(
+      prisma.sportMember.create({
+        data: {
+          name: input.name,
+          role: input.role,
+          sport: input.sport,
+          imageUrl: input.imageUrl,
+          details: input.details,
+        },
+      }),
+    )
+    return mapSportMember(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function updateSportMember(
+  env: Env,
+  id: string,
+  patch: SportMemberPatch,
+): Promise<SportMember> {
+  const prisma = await requirePrisma(env)
+  try {
+    const data: {
+      name?: string
+      role?: string
+      sport?: string
+      imageUrl?: string | null
+      details?: string | null
+    } = {}
+
+    if (patch.name !== undefined) data.name = patch.name
+    if (patch.role !== undefined) data.role = patch.role
+    if (patch.sport !== undefined) data.sport = patch.sport
+    if (patch.imageUrl !== undefined) data.imageUrl = patch.imageUrl
+    if (patch.details !== undefined) data.details = patch.details
+
+    const row = await withTimeout(prisma.sportMember.update({ where: { id }, data }))
+    return mapSportMember(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function deleteSportMember(env: Env, id: string): Promise<{ id: string }> {
+  const prisma = await requirePrisma(env)
+  try {
+    await withTimeout(prisma.sportMember.delete({ where: { id } }))
     return { id }
   } catch (error) {
     return dbFailure(error)

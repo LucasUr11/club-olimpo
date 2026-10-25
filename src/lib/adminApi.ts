@@ -10,9 +10,10 @@
 
 import type { AdminSession } from '../../shared/types'
 
-export type AdminResource = 'matches' | 'news' | 'sponsors' | 'products'
+export type AdminResource = 'matches' | 'news' | 'sport-members' | 'sponsors' | 'products'
 
 const TOKEN_KEY = 'olimpo.admin.token'
+let memoryToken: string | null = null
 
 export class AdminApiError extends Error {
   readonly status: number
@@ -32,18 +33,21 @@ export class AdminApiError extends Error {
 
 export function getAdminToken(): string | null {
   try {
-    return window.sessionStorage.getItem(TOKEN_KEY)
+    const token = window.sessionStorage.getItem(TOKEN_KEY)
+    if (token) memoryToken = token
+    return token || memoryToken
   } catch {
-    return null
+    return memoryToken
   }
 }
 
 export function setAdminToken(token: string | null): void {
+  memoryToken = token
   try {
     if (token) window.sessionStorage.setItem(TOKEN_KEY, token)
     else window.sessionStorage.removeItem(TOKEN_KEY)
   } catch {
-    // sessionStorage puede estar bloqueado (modo privado): la sesión vive solo en memoria.
+    // sessionStorage puede estar bloqueado; memoryToken conserva la sesión en esta pestaña.
   }
 }
 

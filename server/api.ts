@@ -2,7 +2,7 @@
 // API del portal — router compartido (Vite plugin + Vercel Function)
 // ----------------------------------------------------------------------------
 // Público:
-//   GET  /api/health | matches | news | achievements | sponsors | history | products
+//   GET  /api/health | matches | news | sport-members | achievements | sponsors | history | products
 //
 // Autenticación del panel:
 //   POST /api/auth/login    { password } → { data: { token, tokenType, expiresAt } }
@@ -10,14 +10,14 @@
 //   POST /api/auth/logout   (Bearer)     → revoca la sesión
 //
 // Administración (todas requieren Authorization: Bearer <token>):
-//   GET    /api/admin/matches|news|sponsors|products
-//   POST   /api/admin/matches|news|sponsors|products
-//   PATCH  /api/admin/matches|news|sponsors|products/:id
-//   DELETE /api/admin/matches|news|sponsors|products/:id
+//   GET    /api/admin/matches|news|sport-members|sponsors|products
+//   POST   /api/admin/matches|news|sport-members|sponsors|products
+//   PATCH  /api/admin/matches|news|sport-members|sponsors|products/:id
+//   DELETE /api/admin/matches|news|sport-members|sponsors|products/:id
 //
 // Formato de éxito: { data, source?, } · Formato de error: { error: { code, message, details? } }
-// Las lecturas públicas siguen cayendo a fixtures; las escrituras responden
-// 503/504 si Turso no está disponible.
+// Las lecturas públicas y los listados del panel siguen cayendo a fixtures;
+// las escrituras responden 503/504 si Turso no está disponible.
 // ============================================================================
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
@@ -39,10 +39,12 @@ import {
   createNews,
   createProduct,
   createSponsor,
+  createSportMember,
   deleteMatch,
   deleteNews,
   deleteProduct,
   deleteSponsor,
+  deleteSportMember,
   getAchievements,
   getHealth,
   getHistory,
@@ -50,18 +52,22 @@ import {
   getNews,
   getProducts,
   getSponsors,
+  getSportMembers,
   listAdminMatches,
   listAdminNews,
   listAdminProducts,
   listAdminSponsors,
+  listAdminSportMembers,
   updateMatch,
   updateNews,
   updateProduct,
   updateSponsor,
+  updateSportMember,
   type RepositoryResult,
 } from './repositories.js'
 import type { Env } from './db.js'
 import type { ValidationErrors } from '../shared/validation.js'
+import { isDiscipline } from '../shared/types.js'
 import {
   parseMatchCreate,
   parseMatchPatch,
@@ -71,21 +77,38 @@ import {
   parseProductPatch,
   parseSponsorCreate,
   parseSponsorPatch,
+  parseSportMemberCreate,
+  parseSportMemberPatch,
 } from '../shared/validation.js'
 
-type ContentHandler = (env: Env) => Promise<RepositoryResult<unknown>>
+type ContentHandler = (env: Env, url: URL) => Promise<RepositoryResult<unknown>>
 
 const contentRoutes: Record<string, ContentHandler> = {
   '/api/health': (env) => getHealth(env),
-  '/api/matches': (env) => getMatches(env),
-  '/api/news': (env) => getNews(env),
+  '/api/matches': (env, url) => {
+    const discipline = url.searchParams.get('discipline')
+    if (discipline === null) return getMatches(env)
+    if (!isDiscipline(discipline)) {
+      throw new ApiError(400, 'invalid_query', 'La disciplina indicada no es válida.')
+    }
+    return getMatches(env, discipline)
+  },
+  '/api/news': (env, url) => {
+    const discipline = url.searchParams.get('discipline')
+    if (discipline === null) return getNews(env)
+    if (!isDiscipline(discipline)) {
+      throw new ApiError(400, 'invalid_query', 'La disciplina indicada no es válida.')
+    }
+    return getNews(env, discipline)
+  },
+  '/api/sport-members': (env) => getSportMembers(env),
   '/api/achievements': (env) => getAchievements(env),
   '/api/sponsors': (env) => getSponsors(env),
   '/api/history': (env) => getHistory(env),
   '/api/products': (env) => getProducts(env),
 }
 
-const ADMIN_RESOURCES = new Set(['matches', 'news', 'sponsors', 'products'])
+const ADMIN_RESOURCES = new Set(['matches', 'news', 'sport-members', 'sponsors', 'products'])
 const ADMIN_ROUTE = /^\/api\/admin\/([a-z-]+)(?:\/([^/]+))?$/
 const MAX_BODY_BYTES = 256 * 1024
 
@@ -261,6 +284,8 @@ async function adminList(resource: string, env: Env): Promise<RepositoryResult<u
       return listAdminMatches(env)
     case 'news':
       return listAdminNews(env)
+    case 'sport-members':
+      return listAdminSportMembers(env)
     case 'sponsors':
       return listAdminSponsors(env)
     case 'products':
@@ -281,6 +306,11 @@ async function adminCreate(resource: string, env: Env, body: unknown): Promise<u
       const parsed = parseNewsCreate(body)
       if (!parsed.ok) throw validationError(parsed.errors)
       return createNews(env, parsed.value)
+    }
+    case 'sport-members': {
+      const parsed = parseSportMemberCreate(body)
+      if (!parsed.ok) throw validationError(parsed.errors)
+      return createSportMember(env, parsed.value)
     }
     case 'sponsors': {
       const parsed = parseSponsorCreate(body)
@@ -309,6 +339,11 @@ async function adminUpdate(resource: string, env: Env, id: string, body: unknown
       if (!parsed.ok) throw validationError(parsed.errors)
       return updateNews(env, id, parsed.value)
     }
+    case 'sport-members': {
+      const parsed = parseSportMemberPatch(body)
+      if (!parsed.ok) throw validationError(parsed.errors)
+      return updateSportMember(env, id, parsed.value)
+    }
     case 'sponsors': {
       const parsed = parseSponsorPatch(body)
       if (!parsed.ok) throw validationError(parsed.errors)
@@ -330,6 +365,8 @@ async function adminDelete(resource: string, env: Env, id: string): Promise<{ id
       return deleteMatch(env, id)
     case 'news':
       return deleteNews(env, id)
+    case 'sport-members':
+      return deleteSportMember(env, id)
     case 'sponsors':
       return deleteSponsor(env, id)
     case 'products':
@@ -354,7 +391,7 @@ async function routeApiRequest(req: IncomingMessage, res: ServerResponse, env: E
   const contentHandler = contentRoutes[path]
   if (contentHandler) {
     if (method !== 'GET' && method !== 'HEAD') throw methodNotAllowed('GET, HEAD')
-    const result = await contentHandler(env)
+    const result = await contentHandler(env, url)
     res.setHeader('x-data-source', result.source)
     sendJson(res, 200, result)
     return

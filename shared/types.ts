@@ -21,6 +21,10 @@ export const DISCIPLINE_LABELS: Record<Discipline, string> = {
   hockey: 'Hockey',
 }
 
+/** Roles de los integrantes de una disciplina. */
+export const SPORT_MEMBER_ROLES = ['PROFESSOR', 'STUDENT'] as const
+export type SportMemberRole = (typeof SPORT_MEMBER_ROLES)[number]
+
 /** Categorías editoriales de las noticias. */
 export const NEWS_CATEGORIES = ['primera', 'inferiores', 'obras', 'institucional'] as const
 export type NewsCategory = (typeof NEWS_CATEGORIES)[number]
@@ -78,6 +82,7 @@ export interface NewsItem {
   slug: string
   excerpt: string
   category: NewsCategory
+  discipline: Discipline | null
   publishedAt: string
   /** URL de la imagen de portada (almacenamiento en la nube o ruta local). */
   coverUrl: string | null
@@ -119,6 +124,16 @@ export interface HistoryMilestone {
   year: number
   title: string
   description: string
+}
+
+/** Profesor o alumno de una disciplina deportiva. */
+export interface SportMember {
+  id: string
+  name: string
+  role: SportMemberRole
+  sport: Discipline
+  imageUrl: string | null
+  details: string | null
 }
 
 /** Producto de la tienda. */
@@ -175,6 +190,7 @@ export interface NewsInput {
   excerpt: string
   body: string | null
   category: NewsCategory
+  discipline: Discipline | null
   coverUrl: string | null
   published: boolean
   /** ISO-8601; si es null la base usa la fecha de creación. */
@@ -205,6 +221,15 @@ export interface ProductInput {
 }
 export type ProductPatch = Partial<ProductInput>
 
+export interface SportMemberInput {
+  name: string
+  role: SportMemberRole
+  sport: Discipline
+  imageUrl: string | null
+  details: string | null
+}
+export type SportMemberPatch = Partial<SportMemberInput>
+
 /** Respuesta del login del panel. */
 export interface AdminSession {
   token: string
@@ -218,6 +243,14 @@ export interface AdminSession {
 
 export function isDiscipline(value: unknown): value is Discipline {
   return typeof value === 'string' && (DISCIPLINES as readonly string[]).includes(value)
+}
+
+export function isSportMemberRole(value: unknown): value is SportMemberRole {
+  return typeof value === 'string' && (SPORT_MEMBER_ROLES as readonly string[]).includes(value)
+}
+
+export function asSportMemberRole(value: unknown): SportMemberRole {
+  return isSportMemberRole(value) ? value : 'STUDENT'
 }
 
 export function asDiscipline(value: unknown): Discipline {

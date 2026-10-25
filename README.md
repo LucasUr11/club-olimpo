@@ -22,6 +22,39 @@ npm run dev
 
 El portal arranca en `http://localhost:5173`. **No hace falta configurar la base de datos para ver el sitio**: si Turso no está configurado o está vacío, la API responde con los datos de demostración de `shared/fixtures.ts` y el header `x-data-source: fixtures` lo indica.
 
+## Disciplinas deportivas
+
+La portada incluye la sección **Disciplinas**, accesible desde la navegación en
+`#disciplinas`. Permite cambiar entre las disciplinas del club y muestra las
+fichas de profesores y alumnos, partidos programados y novedades asociadas.
+Las noticias sin disciplina asociada se consideran generales y también pueden
+aparecer en esta sección. Los roles se distinguen por color y la interfaz se
+adapta a móviles y escritorio.
+
+Los integrantes se administran desde la pestaña **Disciplinas** del panel
+`/admin`. Cada ficha tiene nombre, rol (`PROFESSOR` o `STUDENT`), disciplina,
+foto opcional y detalles opcionales. En el formulario de noticias se puede
+asociar una disciplina o seleccionar **General del club**.
+
+La lectura pública de integrantes está disponible en `GET /api/sport-members`;
+el panel usa los métodos autenticados `GET`, `POST`, `PATCH` y `DELETE` en
+`/api/admin/sport-members`. Las noticias conservan su endpoint habitual y ahora
+incluyen `discipline` (`null` para noticias generales). La agenda y las
+novedades aceptan `?discipline=<clave>`; las novedades incluyen tanto las
+asociadas a esa disciplina como las generales del club.
+
+Para una base Turso existente, aplicá una sola vez la migración aditiva:
+
+```bash
+turso db shell olimpo < prisma/migrate-sports-members.sql
+npm run db:generate
+```
+
+Para una base nueva, generá y aplicá `prisma/schema.sql` como se describe en
+[Configuración de Turso](#configuración-de-turso). El script de seed puede
+volver a poblar la base y, como los fixtures no inventan identidades, las
+disciplinas comienzan sin fichas reales hasta cargarlas desde el panel.
+
 ## Variables de entorno
 
 `.env` está gitignorado. Estas son todas las variables disponibles:
@@ -178,7 +211,8 @@ La sesión se guarda en `sessionStorage` (se pierde al cerrar la pestaña) y se 
 | Pestaña | Listado | Formulario |
 | --- | --- | --- |
 | **Partidos** | Tarjetas con disciplina, rival, fecha/hora, cancha, estado y marcador | Disciplina, equipo, rival, localía, fecha/hora, competencia, estadio, estado y goles |
-| **Noticias** | Portada, categoría, estado (publicada/borrador) y fecha | Título, slug, bajada, cuerpo, categoría, fecha, imagen y publicación |
+| **Noticias** | Portada, categoría, disciplina, estado (publicada/borrador) y fecha | Título, slug, bajada, cuerpo, categoría, disciplina asociada, fecha, imagen y publicación |
+| **Disciplinas** | Fichas con disciplina, rol y foto | Nombre, rol (profesor/alumno), disciplina, foto y detalles |
 | **Sponsors** | Logo, categoría, orden y sitio web | Nombre, categoría, URL, logo y orden |
 | **Productos** | Imagen, precios socio/no socio, categoría y estado (disponible/agotado) | Nombre, slug, descripción, precios socio y no socio, moneda, categoría (selector + nueva), imagen, destacado y disponibilidad |
 
@@ -311,6 +345,10 @@ Revoca el token recibido. Es idempotente: responde `200` aunque el token ya haya
 | `POST` | `/api/admin/news` | Crea una noticia |
 | `PATCH` | `/api/admin/news/:id` | Edita campos parciales |
 | `DELETE` | `/api/admin/news/:id` | Elimina una noticia |
+| `GET` | `/api/admin/sport-members` | Todos los integrantes |
+| `POST` | `/api/admin/sport-members` | Crea un integrante |
+| `PATCH` | `/api/admin/sport-members/:id` | Edita campos parciales |
+| `DELETE` | `/api/admin/sport-members/:id` | Elimina un integrante |
 | `GET` | `/api/admin/sponsors` | Todos los sponsors |
 | `POST` | `/api/admin/sponsors` | Crea un sponsor |
 | `PATCH` | `/api/admin/sponsors/:id` | Edita campos parciales |
@@ -346,6 +384,7 @@ Las respuestas de escritura usan el mismo sobre que las lecturas: `{ data, sourc
 | `slug` | minúsculas, números y guiones (120), único | Sí | — |
 | `excerpt` | string (500) | Sí | — |
 | `category` | `primera \| inferiores \| obras \| institucional` | No | `institucional` |
+| `discipline` | disciplina \| `null` | No | `null` (noticia general) |
 | `body` | string \| null (20 000) | No | `null` |
 | `coverUrl` | URL de imagen \| null | No | `null` |
 | `published` | boolean | No | `true` |
@@ -377,6 +416,16 @@ Las respuestas de escritura usan el mismo sobre que las lecturas: `{ data, sourc
 | `available` | boolean | No | `true` |
 
 Si se envían ambos precios, `memberPrice` no puede ser mayor que `nonMemberPrice`. En `PATCH` solo se validan y actualizan los campos enviados; enviar un objeto vacío devuelve `400`.
+
+**Integrantes de disciplinas** (`sport-members`)
+
+| Campo | Tipo | Obligatorio | Default |
+| --- | --- | --- | --- |
+| `name` | string (120) | Sí | — |
+| `role` | `PROFESSOR \| STUDENT` | Sí | `STUDENT` |
+| `sport` | disciplina | Sí | `futbol` |
+| `imageUrl` | URL de imagen \| null | No | `null` |
+| `details` | string \| null (1000) | No | `null` |
 
 ### Ejemplo: crear una noticia con imagen en la nube
 
@@ -470,12 +519,34 @@ Reglas de validación (`shared/validation.ts` → `optionalUrl`):
 | `npm run db:schema:sql` | Deriva `prisma/schema.sql` desde el schema |
 | `npm run db:seed` | Inserta los datos de demostración en Turso |
 
+## Integrantes de disciplinas deportivas
+
+El modelo `SportMember` registra profesores y alumnos por disciplina. El campo
+`role` admite `PROFESSOR` o `STUDENT`; `sport` usa las claves de `Discipline`
+definidas en `shared/types.ts`. La imagen (`imageUrl`) y los detalles (`details`)
+son opcionales. Los contratos compartidos para lectura y escritura son
+`SportMember` y `SportMemberInput`.
+
+Para reflejar el modelo en una base nueva, regenerá el SQL y el cliente Prisma:
+
+```bash
+npm run db:schema:sql
+npm run db:generate
+```
+
+Luego aplicá `prisma/schema.sql` al crear la base, como se describe en
+[Configuración de Turso](#configuración-de-turso). En una base existente, no
+vuelvas a ejecutar el esquema completo: aplicá una vez
+`prisma/migrate-sports-members.sql`, que crea `SportMember` y agrega la
+asociación opcional `News.discipline`.
+
 ## Arquitectura
 
 ```
-prisma/schema.prisma     modelos (Match, News, Achievement, Sponsor, HistoryMilestone, Product)
+prisma/schema.prisma     modelos (Match, News, Achievement, Sponsor, HistoryMilestone, SportMember, Product)
 prisma/schema.sql        esquema completo para una base nueva
 prisma/migrate-product-prices.sql  migración manual de precio único → socio/no socio
+prisma/migrate-sports-members.sql  migración aditiva para disciplinas e integrantes
 generated/prisma/        Prisma Client generado (gitignorado)
 shared/types.ts          DTOs compartidos + payloads de escritura
 shared/validation.ts     validación de payloads (admin) reutilizable por el frontend
@@ -489,6 +560,7 @@ server/env.ts            adapta process.env al tipo Env del runtime serverless
 api/index.ts             Vercel Function que delega en handleApiRequest()
 vercel.json              build, output y rewrites de API + fallback SPA
 src/components/          Header, Footer, secciones de la landing, íconos y UI compartida
+src/components/home/SportsSection.tsx  fichas, agenda y novedades por disciplina
 src/components/shop/     ShopPage, ProductCard, ProductDetailModal, CartPanel y lógica del carrito
 src/admin/               panel: login, shell, secciones CRUD y componentes
 src/hooks/useApi.ts      fetch con cache; arranca con fixtures y reemplaza al llegar la respuesta

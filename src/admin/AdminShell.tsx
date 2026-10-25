@@ -6,6 +6,7 @@ import { useState } from 'react'
 import {
   CalendarDays,
   ExternalLink,
+  GraduationCap,
   Handshake,
   LogOut,
   Newspaper,
@@ -14,12 +15,14 @@ import {
 import { cn } from '../lib/cn'
 import MatchesSection from './sections/MatchesSection'
 import NewsSection from './sections/NewsSection'
+import SportMembersSection from './sections/SportMembersSection'
 import SponsorsSection from './sections/SponsorsSection'
 import ProductsSection from './sections/ProductsSection'
 
 const TABS = [
   { id: 'matches', label: 'Partidos', icon: CalendarDays },
   { id: 'news', label: 'Noticias', icon: Newspaper },
+  { id: 'sport-members', label: 'Disciplinas', icon: GraduationCap },
   { id: 'sponsors', label: 'Sponsors', icon: Handshake },
   { id: 'products', label: 'Productos', icon: ShoppingBag },
 ] as const
@@ -100,6 +103,7 @@ export default function AdminShell({ onLogout }: AdminShellProps) {
       <main className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-10">
         {tab === 'matches' ? <MatchesSection /> : null}
         {tab === 'news' ? <NewsSection /> : null}
+        {tab === 'sport-members' ? <SportMembersSection /> : null}
         {tab === 'sponsors' ? <SponsorsSection /> : null}
         {tab === 'products' ? <ProductsSection /> : null}
       </main>

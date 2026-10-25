@@ -3,6 +3,7 @@ import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import HeroSection from './components/home/HeroSection'
 import NextMatches from './components/home/NextMatches'
+import SportsSection from './components/home/SportsSection'
 import NewsCarousel from './components/home/NewsCarousel'
 import FeaturedProducts from './components/home/FeaturedProducts'
 import HistorySection from './components/home/HistorySection'
@@ -30,6 +31,7 @@ function HomePage() {
       <main id="contenido">
         <HeroSection />
         <NextMatches />
+        <SportsSection />
         <NewsCarousel />
         <FeaturedProducts />
         <HistorySection />

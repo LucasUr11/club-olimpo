@@ -15,6 +15,7 @@ import {
   MATCH_STATUSES,
   NEWS_CATEGORIES,
   SPONSOR_TIERS,
+  SPORT_MEMBER_ROLES,
   type MatchInput,
   type MatchPatch,
   type NewsInput,
@@ -23,6 +24,8 @@ import {
   type ProductPatch,
   type SponsorInput,
   type SponsorPatch,
+  type SportMemberInput,
+  type SportMemberPatch,
 } from './types.js'
 
 export type ValidationErrors = Record<string, string>
@@ -174,6 +177,11 @@ function requiredEnum<T extends string>(
   return raw as T
 }
 
+function nullableDiscipline(ctx: Context, key: string): SportMemberInput['sport'] | null {
+  if (!has(ctx, key) || ctx.body[key] === null || ctx.body[key] === '') return null
+  return requiredEnum(ctx, key, 'La disciplina', DISCIPLINES, 'futbol')
+}
+
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 function requiredSlug(ctx: Context, key: string, label: string, max = 120): string | undefined {
@@ -320,6 +328,7 @@ export function parseNewsCreate(input: unknown): ValidationResult<NewsInput> {
     excerpt: requiredString(ctx, 'excerpt', 'La bajada', 500) ?? '',
     body: optionalString(ctx, 'body', 'El cuerpo', 20_000),
     category: requiredEnum(ctx, 'category', 'La categoría', NEWS_CATEGORIES, 'institucional'),
+    discipline: nullableDiscipline(ctx, 'discipline'),
     coverUrl: optionalUrl(ctx, 'coverUrl', 'La imagen de portada'),
     published: booleanOrDefault(ctx, 'published', 'La publicación', true),
     publishedAt: optionalDate(ctx, 'publishedAt', 'La fecha de publicación'),
@@ -346,12 +355,46 @@ export function parseNewsPatch(input: unknown): ValidationResult<NewsPatch> {
   }
   if (has(ctx, 'body')) patch.body = optionalString(ctx, 'body', 'El cuerpo', 20_000)
   if (has(ctx, 'category')) patch.category = requiredEnum(ctx, 'category', 'La categoría', NEWS_CATEGORIES, 'institucional')
+  if (has(ctx, 'discipline')) patch.discipline = nullableDiscipline(ctx, 'discipline')
   if (has(ctx, 'coverUrl')) patch.coverUrl = optionalUrl(ctx, 'coverUrl', 'La imagen de portada')
   if (has(ctx, 'published')) {
     const published = optionalBoolean(ctx, 'published', 'La publicación')
     if (published !== undefined) patch.published = published
   }
   if (has(ctx, 'publishedAt')) patch.publishedAt = optionalDate(ctx, 'publishedAt', 'La fecha de publicación')
+
+  return finishPatch(ctx, patch)
+}
+
+// ── Integrantes de disciplinas ────────────────────────────────────────────
+
+export function parseSportMemberCreate(input: unknown): ValidationResult<SportMemberInput> {
+  const ctx = createContext(input)
+  if (!ctx) return createInvalidBody()
+
+  const value: SportMemberInput = {
+    name: requiredString(ctx, 'name', 'El nombre', 120) ?? '',
+    role: requiredEnum(ctx, 'role', 'El rol', SPORT_MEMBER_ROLES, 'STUDENT'),
+    sport: requiredEnum(ctx, 'sport', 'La disciplina', DISCIPLINES, 'futbol'),
+    imageUrl: optionalUrl(ctx, 'imageUrl', 'La imagen'),
+    details: optionalString(ctx, 'details', 'Los detalles', 1000),
+  }
+  return finish(ctx, value)
+}
+
+export function parseSportMemberPatch(input: unknown): ValidationResult<SportMemberPatch> {
+  const ctx = createContext(input)
+  if (!ctx) return createInvalidBody()
+  const patch: SportMemberPatch = {}
+
+  if (has(ctx, 'name')) {
+    const name = requiredString(ctx, 'name', 'El nombre', 120)
+    if (name !== undefined) patch.name = name
+  }
+  if (has(ctx, 'role')) patch.role = requiredEnum(ctx, 'role', 'El rol', SPORT_MEMBER_ROLES, 'STUDENT')
+  if (has(ctx, 'sport')) patch.sport = requiredEnum(ctx, 'sport', 'La disciplina', DISCIPLINES, 'futbol')
+  if (has(ctx, 'imageUrl')) patch.imageUrl = optionalUrl(ctx, 'imageUrl', 'La imagen')
+  if (has(ctx, 'details')) patch.details = optionalString(ctx, 'details', 'Los detalles', 1000)
 
   return finishPatch(ctx, patch)
 }

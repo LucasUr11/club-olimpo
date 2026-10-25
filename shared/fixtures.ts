@@ -17,6 +17,7 @@ import type {
   NewsItem,
   Product,
   Sponsor,
+  SportMember,
 } from './types.js'
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -191,6 +192,7 @@ export const news: NewsItem[] = [
     excerpt:
       'Con dos goles en el segundo tiempo y el Coco Bordi lleno, Olimpo se quedó con el clásico de Laborde y suma tres puntos claves en el Apertura 2026.',
     category: 'primera',
+    discipline: 'futbol',
     publishedAt: '2026-10-18T22:00:00-03:00',
     coverUrl: null,
   },
@@ -201,6 +203,7 @@ export const news: NewsItem[] = [
     excerpt:
       'Sub-17, Sub-15 y Sub-13 sumaron triunfos en el fin de semana. La cantera sigue creciendo con más de 80 chicos en las categorías formativas.',
     category: 'inferiores',
+    discipline: 'futbol',
     publishedAt: '2026-10-15T20:00:00-03:00',
     coverUrl: null,
   },
@@ -211,6 +214,7 @@ export const news: NewsItem[] = [
     excerpt:
       'La obra, financiada con aportes de socios y sponsors, permitirá jugar partidos nocturnos con estándares de la AFA y reducirá el consumo energético.',
     category: 'obras',
+    discipline: null,
     publishedAt: '2026-10-10T18:00:00-03:00',
     coverUrl: null,
   },
@@ -221,6 +225,7 @@ export const news: NewsItem[] = [
     excerpt:
       'La sede de San Martín 148 recibe de lunes a sábado. Socios activos, familiares y emprendedores del club pueden renovar su cuota anual.',
     category: 'institucional',
+    discipline: null,
     publishedAt: '2026-10-05T12:00:00-03:00',
     coverUrl: null,
   },
@@ -231,6 +236,7 @@ export const news: NewsItem[] = [
     excerpt:
       'El equipo femenino del Olimpo se impuso en su debut y ya prepara el segundo encuentro de local en el Coco Bordi.',
     category: 'institucional',
+    discipline: 'futbol-femenino',
     publishedAt: '2026-09-28T19:00:00-03:00',
     coverUrl: null,
   },
@@ -476,7 +482,10 @@ export interface FixtureSet {
   sponsors: Sponsor[]
   history: HistoryMilestone[]
   products: Product[]
+  sportMembers: SportMember[]
 }
+
+export const sportMembers: SportMember[] = []
 
 export const fixtures: FixtureSet = {
   matches,
@@ -485,4 +494,5 @@ export const fixtures: FixtureSet = {
   sponsors,
   history,
   products,
+  sportMembers,
 }
