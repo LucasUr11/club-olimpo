@@ -14,7 +14,12 @@ export function isShopRoute(): boolean {
   return currentPathname().endsWith('/tienda')
 }
 
-/** Enlaza a una sección del inicio, incluso si estamos en `/tienda`. */
+export function getSportSlug(): string | null {
+  const match = currentPathname().match(/^\/deportes\/([^/]+)$/)
+  return match?.[1] ?? null
+}
+
+/** Enlaza a una sección del inicio, incluso desde una ruta pública dedicada. */
 export function homeHref(hash: string): string {
-  return isAdminRoute() || isShopRoute() ? `/${hash}` : hash
+  return isAdminRoute() || isShopRoute() || getSportSlug() !== null ? `/${hash}` : hash
 }

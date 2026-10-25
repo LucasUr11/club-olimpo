@@ -1,8 +1,7 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { CalendarDays, CalendarX, GraduationCap, MapPin, Newspaper, UserRound } from 'lucide-react'
 import { fixtures } from '../../../shared/fixtures'
 import {
-  DISCIPLINES,
   DISCIPLINE_LABELS,
   NEWS_CATEGORY_LABELS,
   type Discipline,
@@ -16,78 +15,43 @@ import { cn } from '../../lib/cn'
 import SectionHeading from '../ui/SectionHeading'
 
 /** Integrantes, agenda y novedades asociadas a cada disciplina. */
-export default function SportsSection() {
-  const [activeSport, setActiveSport] = useState<Discipline>('futbol')
+export default function SportsSection({ discipline }: { discipline: Discipline }) {
   const { data: members } = useApi<SportMember[]>('/api/sport-members', fixtures.sportMembers)
   const fallbackMatches = useMemo(
-    () => fixtures.matches.filter((match) => match.discipline === activeSport),
-    [activeSport],
+    () => fixtures.matches.filter((match) => match.discipline === discipline),
+    [discipline],
   )
   const fallbackNews = useMemo(
-    () => fixtures.news.filter((item) => item.discipline === null || item.discipline === activeSport),
-    [activeSport],
+    () => fixtures.news.filter((item) => item.discipline === null || item.discipline === discipline),
+    [discipline],
   )
   const { data: matches } = useApi<Match[]>(
-    `/api/matches?discipline=${activeSport}`,
+    `/api/matches?discipline=${discipline}`,
     fallbackMatches,
   )
   const { data: news } = useApi<NewsItem[]>(
-    `/api/news?discipline=${activeSport}`,
+    `/api/news?discipline=${discipline}`,
     fallbackNews,
   )
 
-  const sportMembers = members.filter((member) => member.sport === activeSport)
+  const sportMembers = members.filter((member) => member.sport === discipline)
   const sportMatches = matches.filter(
-    (match) => match.discipline === activeSport && match.status === 'scheduled',
+    (match) => match.discipline === discipline && match.status === 'scheduled',
   )
   const sportNews = news
-    .filter((item) => item.discipline === null || item.discipline === activeSport)
+    .filter((item) => item.discipline === null || item.discipline === discipline)
     .slice(0, 3)
 
   return (
-    <section id="disciplinas" className="scroll-mt-28 bg-hueso py-16 md:py-24">
+    <section className="bg-hueso py-12 md:py-16">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <SectionHeading
           eyebrow="Deporte y comunidad"
-          title="Nuestras disciplinas"
-          description="Conocé a quienes forman cada equipo y encontrá su agenda y novedades."
+          title={DISCIPLINE_LABELS[discipline]}
+          description={`Conocé a quienes forman ${DISCIPLINE_LABELS[discipline]} y encontrá su agenda y novedades.`}
         />
 
-        <div
-          className="mt-8 flex gap-2 overflow-x-auto pb-3"
-          role="tablist"
-          aria-label="Seleccionar disciplina"
-        >
-          {DISCIPLINES.map((sport) => {
-            const active = sport === activeSport
-            return (
-              <button
-                key={sport}
-                id={`disciplina-tab-${sport}`}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                aria-controls="disciplina-panel"
-                onClick={() => setActiveSport(sport)}
-                className={cn(
-                  'shrink-0 cursor-pointer rounded-full border px-4 py-2.5 text-sm font-bold transition',
-                  active
-                    ? 'border-azul bg-azul text-white shadow-md shadow-azul/20'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-azul/40 hover:text-azul',
-                )}
-              >
-                {DISCIPLINE_LABELS[sport]}
-              </button>
-            )
-          })}
-        </div>
-
-        <div
-          id="disciplina-panel"
-          role="tabpanel"
-          aria-labelledby={`disciplina-tab-${activeSport}`}
-          className="mt-6"
-        >
+        <div className="mt-8">
           <section aria-labelledby="integrantes-titulo">
             <div className="flex items-center gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-amarillo text-azul">
@@ -97,7 +61,7 @@ export default function SportsSection() {
                 <h3 id="integrantes-titulo" className="font-display text-2xl font-bold uppercase text-azul">
                   Profesores y alumnos
                 </h3>
-                <p className="text-sm text-slate-500">{DISCIPLINE_LABELS[activeSport]}</p>
+                <p className="text-sm text-slate-500">{DISCIPLINE_LABELS[discipline]}</p>
               </div>
             </div>
 

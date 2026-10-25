@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import HeroSection from './components/home/HeroSection'
-import NextMatches from './components/home/NextMatches'
+import DisciplinesSection from './components/home/DisciplinesSection'
 import SportsSection from './components/home/SportsSection'
 import NewsCarousel from './components/home/NewsCarousel'
 import FeaturedProducts from './components/home/FeaturedProducts'
@@ -10,7 +10,9 @@ import HistorySection from './components/home/HistorySection'
 import PalmaresSection from './components/home/PalmaresSection'
 import SponsorsSection from './components/home/SponsorsSection'
 import StreamingSection from './components/home/StreamingSection'
-import { isAdminRoute, isShopRoute } from './lib/routes'
+import { isAdminRoute, isShopRoute, getSportSlug } from './lib/routes'
+import { DISCIPLINE_LABELS, isDiscipline } from '../shared/types'
+import ButtonLink from './components/ui/ButtonLink'
 
 // El panel y la tienda se cargan bajo demanda: la landing no descarga sus bundles.
 const AdminPage = lazy(() => import('./admin/AdminPage'))
@@ -30,8 +32,7 @@ function HomePage() {
 
       <main id="contenido">
         <HeroSection />
-        <NextMatches />
-        <SportsSection />
+        <DisciplinesSection />
         <NewsCarousel />
         <FeaturedProducts />
         <HistorySection />
@@ -77,6 +78,55 @@ function ShopRoutePage() {
   )
 }
 
+function SportRoutePage({ slug }: { slug: string }) {
+  const discipline = isDiscipline(slug) ? slug : null
+
+  return (
+    <div className="min-h-screen bg-hueso">
+      <a
+        href="#contenido"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-lg focus:bg-amarillo focus:px-4 focus:py-2 focus:font-semibold focus:text-azul"
+      >
+        Saltar al contenido
+      </a>
+
+      <Header />
+
+      <main id="contenido">
+        {discipline ? (
+          <>
+            <div className="bg-azul px-4 py-5 text-white md:px-6">
+              <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+                <p className="font-display text-2xl font-bold uppercase">
+                  {DISCIPLINE_LABELS[discipline]}
+                </p>
+                <ButtonLink href="/#disciplinas" variant="accent">
+                  Todas las disciplinas
+                </ButtonLink>
+              </div>
+            </div>
+            <SportsSection discipline={discipline} />
+          </>
+        ) : (
+          <section className="grid min-h-[60vh] place-items-center px-4 py-16 text-center">
+            <div>
+              <h1 className="font-display text-4xl font-extrabold uppercase text-azul">
+                Disciplina no encontrada
+              </h1>
+              <p className="mt-3 text-slate-600">El enlace puede estar desactualizado.</p>
+              <ButtonLink href="/#disciplinas" variant="primary" className="mt-6">
+                Ver disciplinas
+              </ButtonLink>
+            </div>
+          </section>
+        )}
+      </main>
+
+      <Footer />
+    </div>
+  )
+}
+
 export default function App() {
   if (isAdminRoute()) {
     return (
@@ -96,6 +146,9 @@ export default function App() {
   }
 
   if (isShopRoute()) return <ShopRoutePage />
+
+  const sportSlug = getSportSlug()
+  if (sportSlug) return <SportRoutePage slug={sportSlug} />
 
   return <HomePage />
 }

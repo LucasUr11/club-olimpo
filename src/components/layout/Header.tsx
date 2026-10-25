@@ -6,7 +6,6 @@ import { homeHref, isShopRoute } from '../../lib/routes'
 
 const NAV_ITEMS = [
   { href: '#inicio', label: 'Inicio' },
-  { href: '#partidos', label: 'Partidos' },
   { href: '#disciplinas', label: 'Disciplinas' },
   { href: '#noticias', label: 'Noticias' },
   { href: '#historia', label: 'Historia' },

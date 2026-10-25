@@ -5,7 +5,7 @@ import { club, siteLinks } from '../../../shared/fixtures'
 import { homeHref } from '../../lib/routes'
 
 const FOOTER_LINKS = [
-  { href: '#partidos', label: 'Próximos partidos' },
+  { href: '#disciplinas', label: 'Disciplinas' },
   { href: '#noticias', label: 'Noticias' },
   { href: '#historia', label: 'Historia' },
   { href: '#palmares', label: 'Palmarés' },

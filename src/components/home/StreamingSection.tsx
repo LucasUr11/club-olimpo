@@ -4,6 +4,7 @@ import ButtonLink from '../ui/ButtonLink'
 import { useApi } from '../../hooks/useApi'
 import { fixtures, siteLinks } from '../../../shared/fixtures'
 import type { Match } from '../../../shared/types'
+import { homeHref } from '../../lib/routes'
 
 const HIGHLIGHTS = ['Partidos en vivo', 'Resúmenes semanales', 'Contenido exclusivo'] as const
 
@@ -54,8 +55,8 @@ export default function StreamingSection() {
             >
               Ir al canal oficial
             </ButtonLink>
-            <ButtonLink href="#partidos" variant="outline-light" size="lg">
-              Ver agenda
+            <ButtonLink href={homeHref('#disciplinas')} variant="outline-light" size="lg">
+              Ver disciplinas
             </ButtonLink>
           </div>
         </div>
