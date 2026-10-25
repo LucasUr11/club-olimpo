@@ -36,6 +36,9 @@ export const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {
   institucional: 'Institucional',
 }
 
+/** Categorías principales de los productos; se admiten también categorías personalizadas. */
+export const DEFAULT_PRODUCT_CATEGORIES = ['Accesorios', 'Indumentaria', 'Matero'] as const
+
 /** Estado de un partido. */
 export const MATCH_STATUSES = ['scheduled', 'finished', 'postponed'] as const
 export type MatchStatus = (typeof MATCH_STATUSES)[number]

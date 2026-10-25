@@ -4,7 +4,7 @@
 
 import { useState, type FormEvent } from 'react'
 import { Pencil, ShoppingBag, Sparkles, Star, Trash2 } from 'lucide-react'
-import { type ProductAdminItem } from '../../../shared/types'
+import { DEFAULT_PRODUCT_CATEGORIES, type ProductAdminItem } from '../../../shared/types'
 import { parseProductCreate } from '../../../shared/validation'
 import { adminApi } from '../../lib/adminApi'
 import { cn } from '../../lib/cn'
@@ -83,6 +83,9 @@ function buildPayload(form: ProductFormState) {
 /** Categorías existentes, sin duplicados por mayúsculas/minúsculas. */
 function collectCategories(products: ProductAdminItem[]): string[] {
   const categories = new Map<string, string>()
+  for (const category of DEFAULT_PRODUCT_CATEGORIES) {
+    categories.set(category.toLocaleLowerCase('es'), category)
+  }
   for (const product of products) {
     const value = product.category.trim()
     if (value === '') continue

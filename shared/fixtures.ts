@@ -10,6 +10,7 @@
 // Los enlaces externos (tienda, streaming, redes) viven en `siteLinks`.
 // ============================================================================
 
+import { DEFAULT_PRODUCT_CATEGORIES } from './types.js'
 import type {
   Achievement,
   HistoryMilestone,
@@ -417,7 +418,7 @@ export const products: Product[] = [
     memberPrice: 37999,
     nonMemberPrice: 42999,
     currency: 'ARS',
-    category: 'camisetas',
+    category: DEFAULT_PRODUCT_CATEGORIES[1],
     imageUrl: '/fotos-olimpo/Camiseta-Primera-2026-1.png',
     imageUrls: ['/fotos-olimpo/Camiseta-Primera-2026-1.png', '/fotos-olimpo/Camiseta-Primera-2026-2.png'],
     featured: true,
@@ -430,7 +431,7 @@ export const products: Product[] = [
     memberPrice: 37999,
     nonMemberPrice: 42999,
     currency: 'ARS',
-    category: 'camisetas',
+    category: DEFAULT_PRODUCT_CATEGORIES[1],
     imageUrl: null,
     imageUrls: [],
     featured: true,
@@ -443,7 +444,7 @@ export const products: Product[] = [
     memberPrice: 11999,
     nonMemberPrice: 13999,
     currency: 'ARS',
-    category: 'accesorios',
+    category: DEFAULT_PRODUCT_CATEGORIES[0],
     imageUrl: null,
     imageUrls: [],
     featured: true,
@@ -456,7 +457,7 @@ export const products: Product[] = [
     memberPrice: 21999,
     nonMemberPrice: 24999,
     currency: 'ARS',
-    category: 'entrenamiento',
+    category: DEFAULT_PRODUCT_CATEGORIES[1],
     imageUrl: null,
     imageUrls: [],
     featured: true,
@@ -469,7 +470,7 @@ export const products: Product[] = [
     memberPrice: 15999,
     nonMemberPrice: 17999,
     currency: 'ARS',
-    category: 'entrenamiento',
+    category: DEFAULT_PRODUCT_CATEGORIES[1],
     imageUrl: '/fotos-olimpo/Short-2026.png',
     imageUrls: ['/fotos-olimpo/Short-2026.png'],
     featured: false,

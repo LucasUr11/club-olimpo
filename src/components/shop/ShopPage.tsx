@@ -10,7 +10,7 @@ import {
   Store,
 } from 'lucide-react'
 import { club, fixtures } from '../../../shared/fixtures'
-import type { Product } from '../../../shared/types'
+import { DEFAULT_PRODUCT_CATEGORIES, type Product } from '../../../shared/types'
 import { useApi } from '../../hooks/useApi'
 import { cn } from '../../lib/cn'
 import CartPanel from './CartPanel'
@@ -29,6 +29,14 @@ interface CategoryOption {
   label: string
   count: number
 }
+
+function normalizeCategory(value: string): string {
+  return value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('es')
+}
+
+const defaultCategoryLabels = new Map(
+  DEFAULT_PRODUCT_CATEGORIES.map((label) => [normalizeCategory(label), label]),
+)
 
 /** Vista dedicada de la tienda oficial (`/tienda`). */
 export default function ShopPage() {
@@ -58,9 +66,10 @@ export default function ShopPage() {
   const categories = useMemo<CategoryOption[]>(() => {
     const byKey = new Map<string, CategoryOption>()
     for (const product of products) {
-      const label = product.category.trim()
+      const sourceLabel = product.category.trim().replace(/\s+/g, ' ')
+      const key = normalizeCategory(sourceLabel)
+      const label = defaultCategoryLabels.get(key) ?? sourceLabel
       if (label === '') continue
-      const key = label.toLocaleLowerCase('es')
       const existing = byKey.get(key)
       if (existing) existing.count += 1
       else byKey.set(key, { key, label, count: 1 })
@@ -78,7 +87,7 @@ export default function ShopPage() {
   const filteredProducts = useMemo(() => {
     if (activeCategory === ALL_CATEGORIES) return products
     return products.filter(
-      (product) => product.category.trim().toLocaleLowerCase('es') === activeCategory,
+      (product) => normalizeCategory(product.category) === activeCategory,
     )
   }, [activeCategory, products])
 
