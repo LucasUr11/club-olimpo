@@ -1,15 +1,15 @@
 import { Mail, MapPin, Handshake } from 'lucide-react'
 import { FacebookIcon, InstagramIcon, YoutubeIcon } from '../icons/SocialIcons'
 import ButtonLink from '../ui/ButtonLink'
+import AppLink from '../ui/AppLink'
 import { club, siteLinks } from '../../../shared/fixtures'
-import { homeHref } from '../../lib/routes'
 
 const FOOTER_LINKS = [
-  { href: '#disciplinas', label: 'Disciplinas' },
-  { href: '#noticias', label: 'Noticias' },
-  { href: '#historia', label: 'Historia' },
-  { href: '#palmares', label: 'Palmarés' },
-  { href: '#sponsors', label: 'Sponsors' },
+  { href: '/', label: 'Disciplinas', section: 'disciplinas' },
+  { href: '/', label: 'Noticias', section: 'noticias' },
+  { href: '/', label: 'Historia', section: 'historia' },
+  { href: '/', label: 'Palmarés', section: 'palmares' },
+  { href: '/', label: 'Sponsors', section: 'sponsors' },
 ] as const
 
 const SOCIAL_LINKS = [
@@ -44,13 +44,13 @@ export default function Footer() {
             Más que un club: {new Date().getFullYear() - 1911} años de historia azul y amarilla en
             el sur cordobés.
           </p>
-          <a
+          <AppLink
             href="/admin"
             className="mt-3 inline-block text-xs text-white/35 transition hover:text-white/70"
             target='_blank'
           >
             <span>🔒</span> Admin
-          </a>
+          </AppLink>
         </div>
 
         {/* Enlaces */}
@@ -59,18 +59,19 @@ export default function Footer() {
           <ul className="mt-4 space-y-2.5">
             {FOOTER_LINKS.map((link) => (
               <li key={link.href}>
-                <a
-                  href={homeHref(link.href)}
+                <AppLink
+                  href={link.href}
+                  state={{ scrollTo: link.section }}
                   className="text-sm text-white/65 transition hover:text-amarillo"
                 >
                   {link.label}
-                </a>
+                </AppLink>
               </li>
             ))}
             <li>
-              <a href="/tienda" className="text-sm text-white/65 transition hover:text-amarillo">
+              <AppLink href="/tienda" className="text-sm text-white/65 transition hover:text-amarillo">
                 Tienda oficial
-              </a>
+              </AppLink>
             </li>
           </ul>
         </nav>

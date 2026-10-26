@@ -2,24 +2,19 @@
 // Rutas públicas simples (sin router): el hosting debe reescribir a index.html.
 // ============================================================================
 
-export function currentPathname(): string {
-  return window.location.pathname.replace(/\/+$/, '') || '/'
+export function currentPathname(pathname = window.location.pathname): string {
+  return pathname.replace(/\/+$/, '') || '/'
 }
 
-export function isAdminRoute(): boolean {
-  return currentPathname().endsWith('/admin')
+export function isAdminRoute(pathname?: string): boolean {
+  return currentPathname(pathname).endsWith('/admin')
 }
 
-export function isShopRoute(): boolean {
-  return currentPathname().endsWith('/tienda')
+export function isShopRoute(pathname?: string): boolean {
+  return currentPathname(pathname).endsWith('/tienda')
 }
 
-export function getSportSlug(): string | null {
-  const match = currentPathname().match(/^\/deportes\/([^/]+)$/)
+export function getSportSlug(pathname?: string): string | null {
+  const match = currentPathname(pathname).match(/^\/deportes\/([^/]+)$/)
   return match?.[1] ?? null
-}
-
-/** Enlaza a una sección del inicio, incluso desde una ruta pública dedicada. */
-export function homeHref(hash: string): string {
-  return isAdminRoute() || isShopRoute() || getSportSlug() !== null ? `/${hash}` : hash
 }

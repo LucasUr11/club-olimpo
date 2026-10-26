@@ -4,6 +4,7 @@ import type { Product } from '../../../shared/types'
 import { useApi } from '../../hooks/useApi'
 import { formatPrice } from '../../lib/format'
 import ButtonLink from '../ui/ButtonLink'
+import AppLink from '../ui/AppLink'
 import SectionHeading from '../ui/SectionHeading'
 
 export default function FeaturedProducts() {
@@ -35,14 +36,14 @@ export default function FeaturedProducts() {
         {featuredProducts.length > 0 ? (
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featuredProducts.map((product) => {
-              const detailHref = `/tienda?producto=${encodeURIComponent(product.slug)}#catalogo`
+              const detailHref = `/tienda?producto=${encodeURIComponent(product.slug)}`
 
               return (
                 <article
                   key={product.id}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-azul/10 bg-white shadow-sm shadow-azul/5 transition duration-300 hover:-translate-y-1 hover:border-amarillo hover:shadow-xl hover:shadow-azul/10"
                 >
-                  <a
+                  <AppLink
                     href={detailHref}
                     className="relative block aspect-square overflow-hidden bg-linear-to-br from-slate-50 via-white to-amarillo/10"
                     aria-label={`Ver detalle de ${product.name}`}
@@ -70,7 +71,7 @@ export default function FeaturedProducts() {
                       <Eye className="h-3.5 w-3.5" aria-hidden />
                       Ver detalle
                     </span>
-                  </a>
+                  </AppLink>
 
                   <div className="flex flex-1 flex-col p-4">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">

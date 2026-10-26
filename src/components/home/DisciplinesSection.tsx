@@ -1,6 +1,7 @@
 import { ArrowUpRight } from 'lucide-react'
 import { DISCIPLINES, DISCIPLINE_LABELS } from '../../../shared/types'
 import SectionHeading from '../ui/SectionHeading'
+import AppLink from '../ui/AppLink'
 
 /** Grilla de accesos a las páginas de cada disciplina. */
 export default function DisciplinesSection() {
@@ -16,7 +17,7 @@ export default function DisciplinesSection() {
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {DISCIPLINES.map((discipline) => (
-            <a
+            <AppLink
               key={discipline}
               href={`/deportes/${discipline}`}
               className="group relative flex min-h-64 flex-col items-center justify-center overflow-hidden rounded-3xl border border-azul/10 bg-white p-6 text-center shadow-sm transition duration-300 hover:-translate-y-1 hover:border-amarillo hover:shadow-xl hover:shadow-azul/10 focus-visible:outline-azul"
@@ -39,7 +40,7 @@ export default function DisciplinesSection() {
                 Conocer más
                 <ArrowUpRight className="h-4 w-4" aria-hidden />
               </span>
-            </a>
+            </AppLink>
           ))}
         </div>
       </div>

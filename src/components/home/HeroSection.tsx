@@ -44,7 +44,8 @@ export default function HeroSection() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink
-              href="#disciplinas"
+              href="/"
+              state={{ scrollTo: 'disciplinas' }}
               variant="accent"
               size="lg"
               icon={<Trophy className="h-5 w-5" aria-hidden />}
@@ -52,7 +53,8 @@ export default function HeroSection() {
               Explorar disciplinas
             </ButtonLink>
             <ButtonLink
-              href="#streaming"
+              href="/"
+              state={{ scrollTo: 'streaming' }}
               variant="outline-light"
               size="lg"
               icon={<Play className="h-5 w-5" aria-hidden />}

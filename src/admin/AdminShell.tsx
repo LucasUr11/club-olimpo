@@ -13,6 +13,7 @@ import {
   ShoppingBag,
 } from 'lucide-react'
 import { cn } from '../lib/cn'
+import AppLink from '../components/ui/AppLink'
 import MatchesSection from './sections/MatchesSection'
 import NewsSection from './sections/NewsSection'
 import SportMembersSection from './sections/SportMembersSection'
@@ -40,7 +41,7 @@ export default function AdminShell({ onLogout }: AdminShellProps) {
     <div className="min-h-screen bg-slate-100">
       <header className="border-b-4 border-amarillo bg-azul text-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 md:px-6">
-          <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Ir al sitio del club">
+          <AppLink href="/" className="flex min-w-0 items-center gap-3" aria-label="Ir al sitio del club">
             <img src="/olimpo-logo.png" alt="" className="h-10 w-auto shrink-0 md:h-11" />
             <span className="min-w-0">
               <span className="block truncate font-display text-lg font-extrabold uppercase leading-tight tracking-wide md:text-xl">
@@ -50,16 +51,16 @@ export default function AdminShell({ onLogout }: AdminShellProps) {
                 C.A. Olimpo A.M. · Contenido del sitio
               </span>
             </span>
-          </a>
+          </AppLink>
 
           <div className="flex shrink-0 items-center gap-2">
-            <a
+            <AppLink
               href="/"
               className="inline-flex items-center gap-1.5 rounded-full border border-white/25 px-3 py-2 text-xs font-semibold text-white/80 transition hover:border-amarillo hover:text-amarillo"
             >
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
               <span className="hidden sm:inline">Ver sitio</span>
-            </a>
+            </AppLink>
             <button
               type="button"
               onClick={onLogout}

@@ -1,12 +1,14 @@
-import type { AnchorHTMLAttributes, ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { cn } from '../../lib/cn'
+import AppLink from './AppLink'
 
 type Variant = 'accent' | 'primary' | 'outline-light' | 'outline-dark'
 type Size = 'sm' | 'md' | 'lg'
 
-interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+interface ButtonLinkProps extends Omit<ComponentProps<typeof AppLink>, 'children'> {
   variant?: Variant
   size?: Size
+  children: ReactNode
   /** Icono opcional al inicio del texto. */
   icon?: ReactNode
 }
@@ -36,7 +38,7 @@ export default function ButtonLink({
   ...rest
 }: ButtonLinkProps) {
   return (
-    <a
+    <AppLink
       className={cn(
         'inline-flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.98]',
         VARIANT_CLASSES[variant],
@@ -47,6 +49,6 @@ export default function ButtonLink({
     >
       {icon}
       {children}
-    </a>
+    </AppLink>
   )
 }

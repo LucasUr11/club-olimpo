@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import HeroSection from './components/home/HeroSection'
@@ -13,6 +14,7 @@ import StreamingSection from './components/home/StreamingSection'
 import { isAdminRoute, isShopRoute, getSportSlug } from './lib/routes'
 import { DISCIPLINE_LABELS, isDiscipline } from '../shared/types'
 import ButtonLink from './components/ui/ButtonLink'
+import type { AppRouteState } from './components/ui/AppLink'
 
 // El panel y la tienda se cargan bajo demanda: la landing no descarga sus bundles.
 const AdminPage = lazy(() => import('./admin/AdminPage'))
@@ -100,7 +102,11 @@ function SportRoutePage({ slug }: { slug: string }) {
                 <p className="font-display text-2xl font-bold uppercase">
                   {DISCIPLINE_LABELS[discipline]}
                 </p>
-                <ButtonLink href="/#disciplinas" variant="accent">
+                <ButtonLink
+                  href="/"
+                  state={{ scrollTo: 'disciplinas' }}
+                  variant="accent"
+                >
                   Todas las disciplinas
                 </ButtonLink>
               </div>
@@ -114,7 +120,12 @@ function SportRoutePage({ slug }: { slug: string }) {
                 Disciplina no encontrada
               </h1>
               <p className="mt-3 text-slate-600">El enlace puede estar desactualizado.</p>
-              <ButtonLink href="/#disciplinas" variant="primary" className="mt-6">
+              <ButtonLink
+                href="/"
+                state={{ scrollTo: 'disciplinas' }}
+                variant="primary"
+                className="mt-6"
+              >
                 Ver disciplinas
               </ButtonLink>
             </div>
@@ -128,7 +139,21 @@ function SportRoutePage({ slug }: { slug: string }) {
 }
 
 export default function App() {
-  if (isAdminRoute()) {
+  const location = useLocation()
+  const { pathname } = location
+
+  useEffect(() => {
+    const state = location.state as AppRouteState | null
+    const target = state?.scrollTo ? document.getElementById(state.scrollTo) : null
+    if (target) {
+      const frame = requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth' }))
+      return () => cancelAnimationFrame(frame)
+    }
+
+    window.scrollTo(0, 0)
+  }, [location.key, location.state, pathname])
+
+  if (isAdminRoute(pathname)) {
     return (
       <Suspense
         fallback={
@@ -145,9 +170,9 @@ export default function App() {
     )
   }
 
-  if (isShopRoute()) return <ShopRoutePage />
+  if (isShopRoute(pathname)) return <ShopRoutePage />
 
-  const sportSlug = getSportSlug()
+  const sportSlug = getSportSlug(pathname)
   if (sportSlug) return <SportRoutePage slug={sportSlug} />
 
   return <HomePage />

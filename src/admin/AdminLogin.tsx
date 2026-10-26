@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft, Eye, EyeOff, Loader2, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { AdminApiError, adminApi, setAdminToken } from '../lib/adminApi'
+import AppLink from '../components/ui/AppLink'
 
 interface AdminLoginProps {
   onSuccess: () => void
@@ -136,13 +137,13 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
             {submitting ? 'Verificando…' : 'Ingresar al panel'}
           </button>
 
-          <a
+          <AppLink
             href="/"
             className="mt-4 inline-flex w-full items-center justify-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-azul"
           >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
             Volver al sitio
-          </a>
+          </AppLink>
         </form>
 
         <p className="mt-5 text-center text-[11px] leading-relaxed text-white/45">

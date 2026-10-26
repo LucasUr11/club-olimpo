@@ -1,23 +1,22 @@
 import { useState } from 'react'
 import { Menu, X, ShoppingBag, Play, MapPin } from 'lucide-react'
 import ButtonLink from '../ui/ButtonLink'
+import AppLink from '../ui/AppLink'
 import { siteLinks } from '../../../shared/fixtures'
-import { homeHref, isShopRoute } from '../../lib/routes'
 
 const NAV_ITEMS = [
-  { href: '#inicio', label: 'Inicio' },
-  { href: '#disciplinas', label: 'Disciplinas' },
-  { href: '#noticias', label: 'Noticias' },
-  { href: '#historia', label: 'Historia' },
-  { href: '#palmares', label: 'Palmarés' },
-  { href: '#sponsors', label: 'Sponsors' },
+  { href: '/', label: 'Inicio', section: 'inicio' },
+  { href: '/', label: 'Disciplinas', section: 'disciplinas' },
+  { href: '/', label: 'Noticias', section: 'noticias' },
+  { href: '/', label: 'Historia', section: 'historia' },
+  { href: '/', label: 'Palmarés', section: 'palmares' },
+  { href: '/', label: 'Sponsors', section: 'sponsors' },
 ] as const
 
 /** Barra de navegación institucional (sticky) con accesos a Shop y Streaming. */
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const onShopPage = isShopRoute()
-  const shopHref = onShopPage ? '#catalogo' : '/tienda'
+  const shopHref = '/tienda'
 
   return (
     <header className="sticky top-0 z-50">
@@ -36,7 +35,12 @@ export default function Header() {
       <div className="border-b-4 border-amarillo bg-azul text-white shadow-xl shadow-azul-950/25">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:px-6">
           {/* Logo + wordmark */}
-          <a href={homeHref('#inicio')} className="flex shrink-0 items-center gap-3" aria-label="Ir al inicio">
+          <AppLink
+            href="/"
+            state={{ scrollTo: 'inicio' }}
+            className="flex shrink-0 items-center gap-3"
+            aria-label="Ir al inicio"
+          >
             <img
               src="/olimpo-logo.png"
               alt="Escudo del Club Atlético Olimpo Asociación Mutual"
@@ -50,18 +54,19 @@ export default function Header() {
                 Asociación Mutual · 1911
               </span>
             </span>
-          </a>
+          </AppLink>
 
           {/* Navegación desktop */}
           <nav aria-label="Navegación principal" className="hidden items-center gap-1 lg:flex">
             {NAV_ITEMS.map((item) => (
-              <a
-                key={item.href}
-                href={homeHref(item.href)}
+              <AppLink
+                key={item.label}
+                href={item.href}
+                state={item.section ? { scrollTo: item.section } : undefined}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-white/85 transition hover:bg-white/10 hover:text-amarillo"
               >
                 {item.label}
-              </a>
+              </AppLink>
             ))}
           </nav>
 
@@ -96,14 +101,15 @@ export default function Header() {
         >
           <nav aria-label="Menú móvil" className="mx-auto flex max-w-7xl flex-col px-4 py-4">
             {NAV_ITEMS.map((item) => (
-              <a
-                key={item.href}
-                href={homeHref(item.href)}
+              <AppLink
+                key={item.label}
+                href={item.href}
+                state={item.section ? { scrollTo: item.section } : undefined}
                 onClick={() => setMenuOpen(false)}
                 className="rounded-lg px-3 py-3 text-base font-medium text-white/85 transition hover:bg-white/10 hover:text-amarillo"
               >
                 {item.label}
-              </a>
+              </AppLink>
             ))}
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-4">
               <ButtonLink

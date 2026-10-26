@@ -1,10 +1,10 @@
 import { Check, Play } from 'lucide-react'
 import SectionHeading from '../ui/SectionHeading'
 import ButtonLink from '../ui/ButtonLink'
+import AppLink from '../ui/AppLink'
 import { useApi } from '../../hooks/useApi'
 import { fixtures, siteLinks } from '../../../shared/fixtures'
 import type { Match } from '../../../shared/types'
-import { homeHref } from '../../lib/routes'
 
 const HIGHLIGHTS = ['Partidos en vivo', 'Resúmenes semanales', 'Contenido exclusivo'] as const
 
@@ -55,7 +55,7 @@ export default function StreamingSection() {
             >
               Ir al canal oficial
             </ButtonLink>
-            <ButtonLink href={homeHref('#disciplinas')} variant="outline-light" size="lg">
+            <ButtonLink href="/" state={{ scrollTo: 'disciplinas' }} variant="outline-light" size="lg">
               Ver disciplinas
             </ButtonLink>
           </div>
@@ -77,13 +77,13 @@ export default function StreamingSection() {
           </div>
 
           <div className="pattern-stripes relative grid aspect-video place-items-center bg-gradient-to-br from-azul to-azul-950">
-            <a
+            <AppLink
               href={siteLinks.streaming}
               aria-label="Reproducir la transmisión en vivo"
               className="grid h-20 w-20 place-items-center rounded-full bg-amarillo text-azul shadow-xl shadow-black/40 transition duration-200 hover:scale-105 hover:bg-amarillo-dark"
             >
               <Play className="h-9 w-9 translate-x-0.5" aria-hidden />
-            </a>
+            </AppLink>
 
             <div className="absolute inset-x-4 bottom-4 rounded-xl bg-azul-950/70 px-4 py-3 backdrop-blur">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amarillo">

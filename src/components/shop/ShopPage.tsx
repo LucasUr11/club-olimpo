@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
   Check,
@@ -14,6 +15,7 @@ import { DEFAULT_PRODUCT_CATEGORIES, type Product } from '../../../shared/types'
 import { useApi } from '../../hooks/useApi'
 import { cn } from '../../lib/cn'
 import CartPanel from './CartPanel'
+import AppLink from '../ui/AppLink'
 import ProductCard from './ProductCard'
 import ProductDetailModal from './ProductDetailModal'
 import {
@@ -40,6 +42,7 @@ const defaultCategoryLabels = new Map(
 
 /** Vista dedicada de la tienda oficial (`/tienda`). */
 export default function ShopPage() {
+  const navigate = useNavigate()
   const { data: products } = useApi<Product[]>('/api/products', fixtures.products)
   const [isMember, setIsMember] = useState(false)
   const [cart, setCart] = useState<Record<string, number>>({})
@@ -146,7 +149,7 @@ export default function ShopPage() {
     const url = new URL(window.location.href)
     if (url.searchParams.has('producto')) {
       url.searchParams.delete('producto')
-      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
+      navigate(`${url.pathname}${url.search}${url.hash}`, { replace: true })
     }
   }
 
@@ -165,13 +168,13 @@ export default function ShopPage() {
 
         <div className="relative mx-auto max-w-7xl px-4 pb-10 pt-7 md:px-6 md:pb-16 md:pt-10">
           <div className="flex items-center justify-between gap-4">
-            <a
+            <AppLink
               href="/"
               className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white/80 transition hover:border-amarillo hover:text-amarillo"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden />
               Volver al inicio
-            </a>
+            </AppLink>
             <span className="hidden items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/45 sm:inline-flex">
               <Store className="h-4 w-4 text-amarillo" aria-hidden />
               Tienda oficial · Desde 1911
