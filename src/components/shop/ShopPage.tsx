@@ -236,7 +236,7 @@ export default function ShopPage() {
           <div
             role="group"
             aria-label="Filtrar productos por categoría"
-            className="mt-5 flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="mt-5 flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden"
           >
             <CategoryTab
               active={activeCategory === ALL_CATEGORIES}

@@ -50,7 +50,7 @@ export default function SponsorsSection() {
                   src={sponsor.logoUrl}
                   alt={`Logotipo de ${sponsor.name}`}
                   loading="lazy"
-                  className="max-h-11 w-auto max-w-[8.5rem] object-contain"
+                  className="max-h-11 w-auto max-w-34 object-contain"
                 />
               ) : (
                 <span className="font-display text-lg font-bold uppercase leading-tight tracking-wide text-azul">

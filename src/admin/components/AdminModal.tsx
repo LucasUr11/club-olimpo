@@ -52,7 +52,7 @@ export default function AdminModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto bg-azul-950/70 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-100 flex items-end justify-center overflow-y-auto bg-azul-950/70 backdrop-blur-sm sm:items-center sm:p-6"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !closeDisabled) onClose()

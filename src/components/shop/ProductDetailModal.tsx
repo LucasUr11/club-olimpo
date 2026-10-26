@@ -78,7 +78,7 @@ export default function ProductDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-[80] overflow-y-auto bg-azul-950/75 p-3 backdrop-blur-sm sm:p-6"
+      className="fixed inset-0 z-80 overflow-y-auto bg-azul-950/75 p-3 backdrop-blur-sm sm:p-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
@@ -108,14 +108,14 @@ export default function ProductDetailModal({
 
           <div className="grid md:grid-cols-2">
             {/* Imagen grande */}
-            <div className="relative flex min-h-[300px] flex-col overflow-hidden bg-linear-to-br from-slate-50 via-white to-amarillo/10 p-6 sm:min-h-[420px] md:min-h-[560px]">
+            <div className="relative flex min-h-75 flex-col overflow-hidden bg-linear-to-br from-slate-50 via-white to-amarillo/10 p-6 sm:min-h-105 md:min-h-140">
               <span className="pattern-stripes-dark absolute inset-0 opacity-60" aria-hidden />
               <div className="relative flex flex-1 items-center justify-center py-8">
                 {activeImage ? (
                   <img
                     src={activeImage}
                     alt={`${product.name} — imagen ${activeImageIndex + 1}`}
-                    className="max-h-[320px] w-full object-contain sm:max-h-[440px] md:max-h-[500px]"
+                    className="max-h-80 w-full object-contain sm:max-h-110 md:max-h-125"
                   />
                 ) : (
                   <Shirt className="h-32 w-32 text-azul/20" aria-hidden />
@@ -188,7 +188,7 @@ export default function ProductDetailModal({
                   className={cn(
                     'rounded-2xl border p-3 transition',
                     !isMember
-                      ? 'border-azul bg-azul/[0.04] shadow-sm shadow-azul/10'
+                      ? 'border-azul bg-azul/4 shadow-sm shadow-azul/10'
                       : 'border-slate-200 bg-white',
                   )}
                 >

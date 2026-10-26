@@ -20,7 +20,7 @@ export default function StreamingSection() {
     >
       <div className="pattern-stripes absolute inset-0 opacity-60" aria-hidden />
       <div
-        className="absolute -right-40 -top-40 h-[26rem] w-[26rem] rounded-full bg-amarillo/10 blur-3xl"
+        className="absolute -right-40 -top-40 h-104 w-104 rounded-full bg-amarillo/10 blur-3xl"
         aria-hidden
       />
 
@@ -76,7 +76,7 @@ export default function StreamingSection() {
             </span>
           </div>
 
-          <div className="pattern-stripes relative grid aspect-video place-items-center bg-gradient-to-br from-azul to-azul-950">
+          <div className="pattern-stripes relative grid aspect-video place-items-center bg-linear-to-br from-azul to-azul-950">
             <AppLink
               href={siteLinks.streaming}
               aria-label="Reproducir la transmisión en vivo"

@@ -62,7 +62,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
       <div
         aria-live="polite"
         aria-atomic="false"
-        className="pointer-events-none fixed inset-x-3 top-3 z-[120] flex flex-col items-stretch gap-2 sm:inset-x-auto sm:right-6 sm:top-6 sm:w-full sm:max-w-sm"
+        className="pointer-events-none fixed inset-x-3 top-3 z-120 flex flex-col items-stretch gap-2 sm:inset-x-auto sm:right-6 sm:top-6 sm:w-full sm:max-w-sm"
       >
         {toasts.map((toast) => (
           <div

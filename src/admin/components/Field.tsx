@@ -176,7 +176,7 @@ export function SelectField({
         required={required}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy(fieldId, error, hint)}
-        className={cn(CONTROL_CLASSES, 'cursor-pointer appearance-none bg-[length:16px] bg-[right_0.75rem_center] bg-no-repeat pr-9', error && 'border-red-400', className)}
+        className={cn(CONTROL_CLASSES, 'cursor-pointer appearance-none bg-size-[16px] bg-position-[right_0.75rem_center] bg-no-repeat pr-9', error && 'border-red-400', className)}
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",

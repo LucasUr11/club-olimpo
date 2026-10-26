@@ -47,7 +47,7 @@ export default function SportMemberModal({ member, onClose }: SportMemberModalPr
 
   return (
     <div
-      className={`sport-member-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-azul-950/75 p-4 backdrop-blur-sm sm:p-6${isClosing ? ' sport-member-modal-backdrop--closing' : ''}`}
+      className={`sport-member-modal-backdrop fixed inset-0 z-100 flex items-center justify-center overflow-y-auto bg-azul-950/75 p-4 backdrop-blur-sm sm:p-6${isClosing ? ' sport-member-modal-backdrop--closing' : ''}`}
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) handleClose()
@@ -94,7 +94,7 @@ export default function SportMemberModal({ member, onClose }: SportMemberModalPr
           </h2>
           <div
             id="sport-member-modal-details"
-            className="mt-5 overflow-y-auto whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-600"
+            className="mt-5 overflow-y-auto whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-slate-600"
           >
             {member.details || 'No hay información adicional disponible.'}
           </div>

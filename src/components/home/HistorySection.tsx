@@ -59,7 +59,7 @@ export default function HistorySection() {
                 <li key={milestone.id} className="relative">
                   <span
                     aria-hidden
-                    className="absolute -left-[2.6rem] top-6 flex h-5 w-5 items-center justify-center rounded-full border-[3px] border-amarillo bg-azul"
+                    className="absolute left-[-2.6rem] top-6 flex h-5 w-5 items-center justify-center rounded-full border-[3px] border-amarillo bg-azul"
                   />
                   <article className="rounded-2xl border border-slate-200 bg-white p-5 transition duration-300 hover:border-amarillo hover:shadow-lg hover:shadow-azul/5">
                     <div className="flex flex-wrap items-center gap-3">

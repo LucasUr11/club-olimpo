@@ -63,7 +63,7 @@ export default function NewsCarousel() {
     <section id="noticias" className="relative scroll-mt-28 overflow-hidden bg-azul-950 py-16 text-white md:py-24">
       <div className="pattern-stripes absolute inset-0 opacity-70" aria-hidden />
       <div
-        className="absolute -right-40 top-1/3 h-[24rem] w-[24rem] rounded-full bg-azul-700/30 blur-3xl"
+        className="absolute -right-40 top-1/3 h-96 w-[24rem] rounded-full bg-azul-700/30 blur-3xl"
         aria-hidden
       />
 
@@ -103,7 +103,7 @@ export default function NewsCarousel() {
                   className="min-w-full"
                 >
                   <div className={cn('grid', item.coverUrl && 'md:grid-cols-[1.1fr_0.9fr]')}>
-                    <div className="relative min-h-[22rem] p-6 md:min-h-[20rem] md:p-12">
+                    <div className="relative min-h-88 p-6 md:min-h-80 md:p-12">
                       <div className="pattern-stripes absolute inset-0 opacity-50" aria-hidden />
                       <div
                         className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-amarillo/10 blur-3xl"
