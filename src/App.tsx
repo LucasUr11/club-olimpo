@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
@@ -10,6 +10,7 @@ import FeaturedProducts from './components/home/FeaturedProducts'
 import HistorySection from './components/home/HistorySection'
 import PalmaresSection from './components/home/PalmaresSection'
 import SponsorsSection from './components/home/SponsorsSection'
+import SponsorInquiryModal from './components/home/SponsorInquiryModal'
 import StreamingSection from './components/home/StreamingSection'
 import { isAdminRoute, isShopRoute, getSportSlug } from './lib/routes'
 import { DISCIPLINE_LABELS, isDiscipline } from '../shared/types'
@@ -20,7 +21,7 @@ import type { AppRouteState } from './components/ui/AppLink'
 const AdminPage = lazy(() => import('./admin/AdminPage'))
 const ShopPage = lazy(() => import('./components/shop/ShopPage'))
 
-function HomePage() {
+function HomePage({ onOpenSponsorInquiry }: { onOpenSponsorInquiry: () => void }) {
   return (
     <div className="min-h-screen bg-hueso">
       <a
@@ -39,16 +40,16 @@ function HomePage() {
         <FeaturedProducts />
         <HistorySection />
         <PalmaresSection />
-        <SponsorsSection />
+        <SponsorsSection onOpenSponsorInquiry={onOpenSponsorInquiry} />
         <StreamingSection />
       </main>
 
-      <Footer />
+      <Footer onOpenSponsorInquiry={onOpenSponsorInquiry} />
     </div>
   )
 }
 
-function ShopRoutePage() {
+function ShopRoutePage({ onOpenSponsorInquiry }: { onOpenSponsorInquiry: () => void }) {
   return (
     <div className="min-h-screen bg-hueso">
       <a
@@ -75,12 +76,18 @@ function ShopRoutePage() {
         </Suspense>
       </main>
 
-      <Footer />
+      <Footer onOpenSponsorInquiry={onOpenSponsorInquiry} />
     </div>
   )
 }
 
-function SportRoutePage({ slug }: { slug: string }) {
+function SportRoutePage({
+  slug,
+  onOpenSponsorInquiry,
+}: {
+  slug: string
+  onOpenSponsorInquiry: () => void
+}) {
   const discipline = isDiscipline(slug) ? slug : null
 
   return (
@@ -133,7 +140,7 @@ function SportRoutePage({ slug }: { slug: string }) {
         )}
       </main>
 
-      <Footer />
+      <Footer onOpenSponsorInquiry={onOpenSponsorInquiry} />
     </div>
   )
 }
@@ -141,6 +148,9 @@ function SportRoutePage({ slug }: { slug: string }) {
 export default function App() {
   const location = useLocation()
   const { pathname } = location
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false)
+  const openSponsorInquiry = useCallback(() => setIsInquiryOpen(true), [])
+  const closeSponsorInquiry = useCallback(() => setIsInquiryOpen(false), [])
 
   useEffect(() => {
     const state = location.state as AppRouteState | null
@@ -153,8 +163,10 @@ export default function App() {
     window.scrollTo(0, 0)
   }, [location.key, location.state, pathname])
 
+  let page: ReactNode
+
   if (isAdminRoute(pathname)) {
-    return (
+    page = (
       <Suspense
         fallback={
           <div className="grid min-h-screen place-items-center bg-azul">
@@ -168,12 +180,20 @@ export default function App() {
         <AdminPage />
       </Suspense>
     )
+  } else if (isShopRoute(pathname)) {
+    page = <ShopRoutePage onOpenSponsorInquiry={openSponsorInquiry} />
+  } else {
+    const sportSlug = getSportSlug(pathname)
+
+    page = sportSlug
+      ? <SportRoutePage slug={sportSlug} onOpenSponsorInquiry={openSponsorInquiry} />
+      : <HomePage onOpenSponsorInquiry={openSponsorInquiry} />
   }
 
-  if (isShopRoute(pathname)) return <ShopRoutePage />
-
-  const sportSlug = getSportSlug(pathname)
-  if (sportSlug) return <SportRoutePage slug={sportSlug} />
-
-  return <HomePage />
+  return (
+    <>
+      {page}
+      {isInquiryOpen ? <SponsorInquiryModal onClose={closeSponsorInquiry} /> : null}
+    </>
+  )
 }

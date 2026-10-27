@@ -35,8 +35,6 @@ export const siteLinks = {
   whatsapp: '5493537685333',
   /** Canal oficial de streaming en vivo. */
   streaming: '#',
-  /** Formulario / correo para ser sponsor. */
-  sponsorship: '#',
   /** Correo de contacto institucional. */
   email: 'lucasestudios2021@gmail.com',
   instagram: 'https://www.instagram.com/olimpo.laborde/',

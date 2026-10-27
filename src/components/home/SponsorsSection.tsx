@@ -1,7 +1,5 @@
-import { useCallback, useState } from 'react'
 import { Handshake } from 'lucide-react'
 import SectionHeading from '../ui/SectionHeading'
-import SponsorInquiryModal from './SponsorInquiryModal'
 import { useApi } from '../../hooks/useApi'
 import { fixtures } from '../../../shared/fixtures'
 import { cn } from '../../lib/cn'
@@ -14,10 +12,12 @@ const TIER_BORDER: Record<Sponsor['tier'], string> = {
 }
 
 /** Franja de patrocinadores con marquesina animada (pausa al hover). */
-export default function SponsorsSection() {
+export default function SponsorsSection({
+  onOpenSponsorInquiry,
+}: {
+  onOpenSponsorInquiry: () => void
+}) {
   const { data: sponsors } = useApi<Sponsor[]>('/api/sponsors', fixtures.sponsors)
-  const [isInquiryOpen, setIsInquiryOpen] = useState(false)
-  const closeInquiry = useCallback(() => setIsInquiryOpen(false), [])
 
   // Duplicamos la lista para lograr el loop continuo de la marquesina.
   const marqueeItems = [...sponsors, ...sponsors]
@@ -91,14 +91,13 @@ export default function SponsorsSection() {
 
         <button
           type="button"
-          onClick={() => setIsInquiryOpen(true)}
+          onClick={onOpenSponsorInquiry}
           className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-azul/30 px-5 py-2.5 text-sm font-semibold text-azul transition-all duration-200 hover:border-azul hover:bg-azul hover:text-white active:scale-[0.98]"
         >
           <Handshake className="h-4 w-4" aria-hidden />
           Sumate como sponsor del club
         </button>
       </div>
-      {isInquiryOpen ? <SponsorInquiryModal onClose={closeInquiry} /> : null}
     </section>
   )
 }

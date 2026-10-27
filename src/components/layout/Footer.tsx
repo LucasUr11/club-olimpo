@@ -1,8 +1,11 @@
 import { Mail, MapPin, Handshake } from 'lucide-react'
 import { FacebookIcon, InstagramIcon, YoutubeIcon } from '../icons/SocialIcons'
-import ButtonLink from '../ui/ButtonLink'
 import AppLink from '../ui/AppLink'
 import { club, siteLinks } from '../../../shared/fixtures'
+
+interface FooterProps {
+  onOpenSponsorInquiry: () => void
+}
 
 const FOOTER_LINKS = [
   { href: '/', label: 'Disciplinas', section: 'disciplinas' },
@@ -19,7 +22,7 @@ const SOCIAL_LINKS = [
 ] as const
 
 /** Pie de página institucional. */
-export default function Footer() {
+export default function Footer({ onOpenSponsorInquiry }: FooterProps) {
   return (
     <footer className="border-t-4 border-amarillo bg-azul-950 text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-2 md:px-6 lg:grid-cols-4">
@@ -123,14 +126,14 @@ export default function Footer() {
           </div>
 
           <div className="mt-6">
-            <ButtonLink
-              href={siteLinks.sponsorship}
-              variant="accent"
-              size="sm"
-              icon={<Handshake className="h-4 w-4" aria-hidden />}
+            <button
+              type="button"
+              onClick={onOpenSponsorInquiry}
+              className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-amarillo px-4 py-2 text-xs font-semibold text-azul shadow-lg shadow-amarillo/20 transition-all duration-200 hover:bg-amarillo-dark active:scale-[0.98]"
             >
+              <Handshake className="h-4 w-4" aria-hidden />
               Sumate como sponsor
-            </ButtonLink>
+            </button>
           </div>
         </div>
       </div>
