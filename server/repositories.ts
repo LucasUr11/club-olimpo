@@ -20,6 +20,7 @@ import {
   type Match,
   type MatchInput,
   type MatchPatch,
+  type NewsArticle,
   type NewsAdminItem,
   type NewsInput,
   type NewsItem,
@@ -308,6 +309,30 @@ export async function getNews(
     return { data: rows.map(mapNews), source: 'db' }
   } catch {
     return fromFixtures(fallback)
+  }
+}
+
+/** Noticia publicada por slug, incluyendo el cuerpo editorial. */
+export async function getNewsBySlug(
+  env: Env,
+  slug: string,
+): Promise<RepositoryResult<NewsArticle | null>> {
+  const fallback = fixtures.news.find((item) => item.slug === slug)
+  const fallbackArticle = fallback ? { ...fallback, body: null } : null
+  try {
+    const prisma = await getPrisma(env)
+    if (!prisma) return fromFixtures(fallbackArticle)
+
+    const row = await withTimeout(
+      prisma.news.findFirst({ where: { slug, published: true } }),
+    )
+    if (!row) return { data: fallbackArticle, source: 'db' }
+    return {
+      data: { ...mapNews(row), body: row.body },
+      source: 'db',
+    }
+  } catch {
+    return fromFixtures(fallbackArticle)
   }
 }
 

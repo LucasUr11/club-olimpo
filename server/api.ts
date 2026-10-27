@@ -51,6 +51,7 @@ import {
   getHistory,
   getMatches,
   getNews,
+  getNewsBySlug,
   getProducts,
   getSponsors,
   getSportMembers,
@@ -389,6 +390,16 @@ async function routeApiRequest(req: IncomingMessage, res: ServerResponse, env: E
   const method = (req.method ?? 'GET').toUpperCase()
   const url = new URL(req.url ?? '/', 'http://localhost')
   const path = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, '') : url.pathname
+
+  const newsArticleRoute = /^\/api\/news\/([^/]+)$/.exec(path)
+  if (newsArticleRoute) {
+    if (method !== 'GET' && method !== 'HEAD') throw methodNotAllowed('GET, HEAD')
+    const slug = decodeId(newsArticleRoute[1] ?? '')
+    const result = await getNewsBySlug(env, slug)
+    res.setHeader('x-data-source', result.source)
+    sendJson(res, 200, result)
+    return
+  }
 
   const contentHandler = contentRoutes[path]
   if (contentHandler) {

@@ -91,6 +91,11 @@ export interface NewsItem {
   coverUrl: string | null
 }
 
+/** Noticia publicada con su contenido completo para la página de detalle. */
+export interface NewsArticle extends NewsItem {
+  body: string | null
+}
+
 /** Noticia con los campos editoriales que solo ve el panel de administración. */
 export interface NewsAdminItem extends NewsItem {
   body: string | null

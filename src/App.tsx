@@ -11,8 +11,8 @@ import HistorySection from './components/home/HistorySection'
 import PalmaresSection from './components/home/PalmaresSection'
 import SponsorsSection from './components/home/SponsorsSection'
 import SponsorInquiryModal from './components/home/SponsorInquiryModal'
-import StreamingSection from './components/home/StreamingSection'
-import { isAdminRoute, isShopRoute, getSportSlug } from './lib/routes'
+import NewsArticlePage from './components/home/NewsArticlePage'
+import { isAdminRoute, isShopRoute, getNewsSlug, getSportSlug } from './lib/routes'
 import { DISCIPLINE_LABELS, isDiscipline } from '../shared/types'
 import ButtonLink from './components/ui/ButtonLink'
 import type { AppRouteState } from './components/ui/AppLink'
@@ -41,7 +41,6 @@ function HomePage({ onOpenSponsorInquiry }: { onOpenSponsorInquiry: () => void }
         <HistorySection />
         <PalmaresSection />
         <SponsorsSection onOpenSponsorInquiry={onOpenSponsorInquiry} />
-        <StreamingSection />
       </main>
 
       <Footer onOpenSponsorInquiry={onOpenSponsorInquiry} />
@@ -183,11 +182,14 @@ export default function App() {
   } else if (isShopRoute(pathname)) {
     page = <ShopRoutePage onOpenSponsorInquiry={openSponsorInquiry} />
   } else {
+    const newsSlug = getNewsSlug(pathname)
     const sportSlug = getSportSlug(pathname)
 
-    page = sportSlug
-      ? <SportRoutePage slug={sportSlug} onOpenSponsorInquiry={openSponsorInquiry} />
-      : <HomePage onOpenSponsorInquiry={openSponsorInquiry} />
+    page = newsSlug
+      ? <NewsArticlePage slug={newsSlug} onOpenSponsorInquiry={openSponsorInquiry} />
+      : sportSlug
+        ? <SportRoutePage slug={sportSlug} onOpenSponsorInquiry={openSponsorInquiry} />
+        : <HomePage onOpenSponsorInquiry={openSponsorInquiry} />
   }
 
   return (

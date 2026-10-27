@@ -18,3 +18,8 @@ export function getSportSlug(pathname?: string): string | null {
   const match = currentPathname(pathname).match(/^\/deportes\/([^/]+)$/)
   return match?.[1] ?? null
 }
+
+export function getNewsSlug(pathname?: string): string | null {
+  const match = currentPathname(pathname).match(/^\/noticias\/([^/]+)$/)
+  return match?.[1] ?? null
+}

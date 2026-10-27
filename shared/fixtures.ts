@@ -7,7 +7,7 @@
 //   2. Como semilla de la base de datos (npm run db:seed).
 //
 // Reemplazalos por datos oficiales o editá directamente la base en Turso.
-// Los enlaces externos (tienda, streaming, redes) viven en `siteLinks`.
+// Los enlaces externos (tienda y redes) viven en `siteLinks`.
 // ============================================================================
 
 import { DEFAULT_PRODUCT_CATEGORIES } from './types.js'
@@ -33,8 +33,6 @@ export const siteLinks = {
    * Formato internacional, solo dígitos (54 9 353 768 5333).
    */
   whatsapp: '5493537685333',
-  /** Canal oficial de streaming en vivo. */
-  streaming: '#',
   /** Correo de contacto institucional. */
   email: 'lucasestudios2021@gmail.com',
   instagram: 'https://www.instagram.com/olimpo.laborde/',

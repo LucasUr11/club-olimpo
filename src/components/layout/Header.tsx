@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Menu, X, ShoppingBag, Play, MapPin } from 'lucide-react'
+import { Menu, X, ShoppingBag, MapPin } from 'lucide-react'
 import ButtonLink from '../ui/ButtonLink'
 import AppLink from '../ui/AppLink'
-import { siteLinks } from '../../../shared/fixtures'
 
 const NAV_ITEMS = [
   { href: '/', label: 'Inicio', section: 'inicio' },
@@ -13,7 +12,7 @@ const NAV_ITEMS = [
   { href: '/', label: 'Sponsors', section: 'sponsors' },
 ] as const
 
-/** Barra de navegación institucional (sticky) con accesos a Shop y Streaming. */
+/** Barra de navegación institucional (sticky) con acceso a la tienda. */
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const shopHref = '/tienda'
@@ -75,9 +74,6 @@ export default function Header() {
             <ButtonLink href={shopHref} variant="accent" size="sm" icon={<ShoppingBag className="h-4 w-4" aria-hidden />}>
               Shop
             </ButtonLink>
-            <ButtonLink href={siteLinks.streaming} variant="outline-light" size="sm" icon={<Play className="h-4 w-4" aria-hidden />}>
-              En vivo
-            </ButtonLink>
           </div>
 
           {/* Menú móvil */}
@@ -111,7 +107,7 @@ export default function Header() {
                 {item.label}
               </AppLink>
             ))}
-            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-4">
+            <div className="mt-3 border-t border-white/10 pt-4">
               <ButtonLink
                 href={shopHref}
                 variant="accent"
@@ -119,9 +115,6 @@ export default function Header() {
                 onClick={() => setMenuOpen(false)}
               >
                 Shop
-              </ButtonLink>
-              <ButtonLink href={siteLinks.streaming} variant="outline-light" icon={<Play className="h-4 w-4" aria-hidden />}>
-                En vivo
               </ButtonLink>
             </div>
           </nav>

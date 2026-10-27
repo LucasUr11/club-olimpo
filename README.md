@@ -42,6 +42,9 @@ el panel usa los métodos autenticados `GET`, `POST`, `PATCH` y `DELETE` en
 incluyen `discipline` (`null` para noticias generales). La agenda y las
 novedades aceptan `?discipline=<clave>`; las novedades incluyen tanto las
 asociadas a esa disciplina como las generales del club.
+Cada noticia publicada tiene su detalle en `/noticias/<slug>` y está disponible
+con el endpoint público `GET /api/news/<slug>`, que también incluye el cuerpo
+editorial.
 
 Para una base Turso existente, aplicá una sola vez la migración aditiva:
 
@@ -602,6 +605,6 @@ Decisiones clave:
 Los datos de `shared/fixtures.ts` son material de demostración basado en la historia real del club (fundación el 30/08/1911, 16 títulos de la Liga Beccar Varela, Campeón Provincial 2020, etc.):
 
 - **Palmarés:** los ítems de fútbol son los títulos oficiales; los de otras disciplinas son marcadores de diseño y deben completarse con datos verificados.
-- **`siteLinks`:** las URLs de catálogo, Streaming y redes sociales son placeholders a reemplazar por los links reales del club. `siteLinks.whatsapp` define el número que recibe los pedidos de la tienda.
+- **`siteLinks`:** las URLs de catálogo y redes sociales son placeholders a reemplazar por los links reales del club. `siteLinks.whatsapp` define el contacto usado por la tienda y la invitación a asociarse.
 - **Patrocinadores, productos y noticias:** textos de ejemplo listos para sustituir por contenido real desde el panel.
 - **Imágenes:** las columnas `coverUrl`, `logoUrl` e `imageUrl` ya existen en la base; se completan desde el panel con la URL que devuelva el proveedor de almacenamiento.
