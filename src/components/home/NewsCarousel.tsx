@@ -1,6 +1,7 @@
 import { useEffect, useState, type FocusEvent } from 'react'
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 import SectionHeading from '../ui/SectionHeading'
+import AppLink from '../ui/AppLink'
 import { useApi } from '../../hooks/useApi'
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion'
 import { fixtures } from '../../../shared/fixtures'
@@ -100,6 +101,7 @@ export default function NewsCarousel() {
                 <article
                   key={item.id}
                   aria-hidden={itemIndex !== index}
+                  inert={itemIndex !== index}
                   className="min-w-full"
                 >
                   <div className={cn('grid', item.coverUrl && 'md:grid-cols-[1.1fr_0.9fr]')}>
@@ -123,13 +125,27 @@ export default function NewsCarousel() {
                           </time>
                         </div>
 
-                        <h3 className="mt-5 max-w-3xl font-display text-3xl font-extrabold uppercase leading-[0.95] md:text-5xl">
-                          {item.title}
-                        </h3>
+                        <AppLink
+                          href={`/noticias/${encodeURIComponent(item.slug)}`}
+                          className="group/title mt-5 block w-fit max-w-3xl rounded-sm focus-visible:outline-amarillo"
+                          aria-label={`Leer noticia: ${item.title}`}
+                        >
+                          <h3 className="font-display text-3xl font-extrabold uppercase leading-[0.95] transition-colors group-hover/title:text-amarillo md:text-5xl">
+                            {item.title}
+                          </h3>
+                        </AppLink>
 
                         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70 md:text-base">
                           {item.excerpt}
                         </p>
+                        <AppLink
+                          href={`/noticias/${encodeURIComponent(item.slug)}`}
+                          className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-amarillo px-5 py-3 text-sm font-bold text-azul transition hover:bg-amarillo-dark focus-visible:outline-white"
+                          aria-label={`Leer noticia: ${item.title}`}
+                        >
+                          Leer noticia
+                          <ArrowRight className="h-4 w-4" aria-hidden />
+                        </AppLink>
                       </div>
                     </div>
 

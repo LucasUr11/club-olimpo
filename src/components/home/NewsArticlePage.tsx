@@ -55,7 +55,7 @@ export default function NewsArticlePage({
               <img
                 src={article.coverUrl}
                 alt=""
-                className="mt-6 max-h-[28rem] w-full rounded-3xl object-cover"
+                className="mt-6 max-h-112 w-full rounded-3xl object-cover"
               />
             ) : null}
             <div className="mt-8 flex flex-wrap items-center gap-3">
