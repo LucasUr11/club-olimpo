@@ -105,6 +105,18 @@ model Sponsor {
   @@index([tier, order])
 }
 
+/// Consultas de empresas interesadas en patrocinar al club.
+model SponsorInquiry {
+  id          String   @id @default(cuid())
+  companyName String
+  email       String
+  phone       String
+  message     String
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 /// Hitos históricos de la institución (línea de tiempo).
 model HistoryMilestone {
   id String @id @default(cuid())

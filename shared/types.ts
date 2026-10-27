@@ -212,6 +212,13 @@ export interface SponsorInput {
 }
 export type SponsorPatch = Partial<SponsorInput>
 
+export interface SponsorInquiryInput {
+  companyName: string
+  message: string
+  email: string
+  phone: string
+}
+
 export interface ProductInput {
   name: string
   slug: string

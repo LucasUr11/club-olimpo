@@ -35,6 +35,7 @@ import {
   type VerifiedAdminSession,
 } from './auth.js'
 import {
+  createSponsorInquiry,
   createMatch,
   createNews,
   createProduct,
@@ -76,6 +77,7 @@ import {
   parseProductCreate,
   parseProductPatch,
   parseSponsorCreate,
+  parseSponsorInquiry,
   parseSponsorPatch,
   parseSportMemberCreate,
   parseSportMemberPatch,
@@ -400,6 +402,16 @@ async function routeApiRequest(req: IncomingMessage, res: ServerResponse, env: E
   if (path === '/api/auth/login') {
     if (method !== 'POST') throw methodNotAllowed('POST')
     await handleLogin(req, res, env)
+    return
+  }
+
+  if (path === '/api/sponsor-inquiries') {
+    if (method !== 'POST') throw methodNotAllowed('POST')
+    const parsed = parseSponsorInquiry(await readJsonBody(req))
+    if (!parsed.ok) throw validationError(parsed.errors)
+    const data = await createSponsorInquiry(env, parsed.value)
+    res.setHeader('x-data-source', 'db')
+    sendJson(res, 201, { data, source: 'db' })
     return
   }
 

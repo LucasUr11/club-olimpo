@@ -29,6 +29,7 @@ import {
   type ProductInput,
   type ProductPatch,
   type Sponsor,
+  type SponsorInquiryInput,
   type SponsorAdminItem,
   type SponsorInput,
   type SponsorPatch,
@@ -767,6 +768,29 @@ export async function createSponsor(env: Env, input: SponsorInput): Promise<Spon
       }),
     )
     return mapSponsor(row)
+  } catch (error) {
+    return dbFailure(error)
+  }
+}
+
+export async function createSponsorInquiry(
+  env: Env,
+  input: SponsorInquiryInput,
+): Promise<{ id: string; createdAt: string }> {
+  const prisma = await requirePrisma(env)
+  try {
+    const row = await withTimeout(
+      prisma.sponsorInquiry.create({
+        data: {
+          companyName: input.companyName,
+          message: input.message,
+          email: input.email,
+          phone: input.phone,
+        },
+        select: { id: true, createdAt: true },
+      }),
+    )
+    return { id: row.id, createdAt: row.createdAt.toISOString() }
   } catch (error) {
     return dbFailure(error)
   }

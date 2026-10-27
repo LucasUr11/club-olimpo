@@ -23,6 +23,7 @@ import {
   type ProductInput,
   type ProductPatch,
   type SponsorInput,
+  type SponsorInquiryInput,
   type SponsorPatch,
   type SportMemberInput,
   type SportMemberPatch,
@@ -455,6 +456,30 @@ export function parseSponsorPatch(input: unknown): ValidationResult<SponsorPatch
   }
 
   return finishPatch(ctx, patch)
+}
+
+// ── Consultas de patrocinio ────────────────────────────────────────────────
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const PHONE_PATTERN = /^[+\d().\-\s]{7,25}$/
+
+export function parseSponsorInquiry(input: unknown): ValidationResult<SponsorInquiryInput> {
+  const ctx = createContext(input)
+  if (!ctx) return createInvalidBody()
+
+  const companyName = requiredString(ctx, 'companyName', 'El nombre de la empresa', 120) ?? ''
+  const message = requiredString(ctx, 'message', 'El motivo de interés', 2_000) ?? ''
+  const email = requiredString(ctx, 'email', 'El correo electrónico', 254) ?? ''
+  const phone = requiredString(ctx, 'phone', 'El teléfono', 25) ?? ''
+
+  if (email && !EMAIL_PATTERN.test(email)) {
+    addError(ctx, 'email', 'Ingresá un correo electrónico válido.')
+  }
+  if (phone && (!PHONE_PATTERN.test(phone) || phone.replace(/\D/g, '').length < 7)) {
+    addError(ctx, 'phone', 'Ingresá un teléfono válido con al menos 7 dígitos.')
+  }
+
+  return finish(ctx, { companyName, message, email, phone })
 }
 
 // ── Productos ──────────────────────────────────────────────────────────────

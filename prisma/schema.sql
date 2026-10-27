@@ -56,6 +56,16 @@ CREATE TABLE "Sponsor" (
 );
 
 -- CreateTable
+CREATE TABLE "SponsorInquiry" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "companyName" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
 CREATE TABLE "HistoryMilestone" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "year" INTEGER NOT NULL,
@@ -119,6 +129,9 @@ CREATE INDEX "Achievement_discipline_order_idx" ON "Achievement"("discipline", "
 
 -- CreateIndex
 CREATE INDEX "Sponsor_tier_order_idx" ON "Sponsor"("tier", "order");
+
+-- CreateIndex
+CREATE INDEX "SponsorInquiry_createdAt_idx" ON "SponsorInquiry"("createdAt");
 
 -- CreateIndex
 CREATE INDEX "HistoryMilestone_year_idx" ON "HistoryMilestone"("year");

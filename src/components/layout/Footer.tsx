@@ -58,7 +58,7 @@ export default function Footer() {
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-amarillo">El club</p>
           <ul className="mt-4 space-y-2.5">
             {FOOTER_LINKS.map((link) => (
-              <li key={link.href}>
+              <li key={link.section}>
                 <AppLink
                   href={link.href}
                   state={{ scrollTo: link.section }}
